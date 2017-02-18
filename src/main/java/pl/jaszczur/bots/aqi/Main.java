@@ -10,12 +10,17 @@ import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 
 public class Main {
-    public static void main(String[] args) {
-        System.out.println("Odpytujemy serwera");
-        AirQualityApi airQualityApi = new AirQualityApi();
+    private final
+    AirQualityApi airQualityApi = new AirQualityApi();
+    private final TelegramBot bot;
+
+    public Main(TelegramBot bot) {
+        this.bot = bot;
+    }
+
+    public void start() {
 
         final Subject<Update> updatesSubject = PublishSubject.create();
-        final TelegramBot bot = TelegramBotAdapter.build(args[0]);
 
         updatesSubject.forEach(update -> {
             try {
@@ -45,10 +50,15 @@ public class Main {
         });
     }
 
-    private static String formatMessage(AirQualityResult airQualityResult) {
+    private String formatMessage(AirQualityResult airQualityResult) {
         return  airQualityResult.getStation().getName() + ":\n"
                 + " - Pyłki PM2.5: *" + airQualityResult.getValues().get(PartType.PM25) + " µg/m3*\n"
                 + " - Pyłki PM10: *" + airQualityResult.getValues().get(PartType.PM10) + " µg/m3*\n";
+    }
+
+    public static void main(String[] args) {
+        System.out.println("Odpytujemy serwera");
+        new Main(TelegramBotAdapter.build(args[0])).start();
     }
 
 }
