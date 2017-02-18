@@ -1,5 +1,6 @@
 package pl.jaszczur.bots.aqi;
 
+import com.google.common.collect.Maps;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.TelegramBotAdapter;
 import com.pengrad.telegrambot.UpdatesListener;
@@ -10,9 +11,12 @@ import com.pengrad.telegrambot.request.SendMessage;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 
+import java.util.Map;
+
 public class Main {
     private final AirQualityApi airQualityApi = new AirQualityApi();
     private final TelegramBot bot;
+    private final Map<Long, Long> stationIdByChatId = Maps.newConcurrentMap();
 
     public Main(TelegramBot bot) {
         this.bot = bot;
@@ -26,10 +30,22 @@ public class Main {
             try {
                 long stationId = Long.parseLong(update.message().text());
                 airQualityApi.getStats(stationId).subscribe(
-                        aqi -> sendMessage(update.message().chat(), formatMessage(aqi)),
+                        aqi -> {
+                            stationIdByChatId.put(update.message().chat().id(), stationId);
+                            sendMessage(update.message().chat(), formatMessage(aqi));
+                        },
                         err -> sendMessage(update.message().chat(), "Coś nie bangla. Chyba podałeś/aś numer stacji z dupy..."));
             } catch (NumberFormatException ex) {
-                sendMessage(update.message().chat(), "Podaj numer stacji, np 117");
+                Long stationId = stationIdByChatId.get(update.message().chat().id());
+                if (stationId == null) {
+                    sendMessage(update.message().chat(), "Podaj numer stacji, np 117");
+                } else {
+                    airQualityApi.getStats(stationId).subscribe(
+                            aqi -> {
+                                sendMessage(update.message().chat(), formatMessage(aqi));
+                            },
+                            err -> sendMessage(update.message().chat(), "Coś nie bangla. Chyba podałeś/aś numer stacji z dupy..."));
+                }
             }
         });
 
