@@ -2,9 +2,6 @@ package pl.jaszczur.bots.aqi;
 
 import java.util.Map;
 
-/**
- * Created by jaszczur on 2017/2/18.
- */
 class AirQualityResult {
     private final Station station;
     private final Map<PartType, Double> values;
