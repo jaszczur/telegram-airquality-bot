@@ -1,5 +1,6 @@
 package pl.jaszczur.bots.aqi.commands;
 
+import com.google.common.collect.Ordering;
 import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.request.ParseMode;
@@ -59,7 +60,7 @@ public class GetAirQualityCommand implements Command {
     private String formatMessage(Locale locale, AirQualityResult airQualityResult) {
         StringBuilder result = new StringBuilder(airQualityResult.getStation().getName());
         result.append("\n");
-        for (PartType partType : airQualityResult.getAvailableParticleTypes()) {
+        for (PartType partType : Ordering.usingToString().sortedCopy(airQualityResult.getAvailableParticleTypes())) {
             double value = airQualityResult.getValue(partType).get();
             result.append(" - ")
                     .append(partType.getUiName())
