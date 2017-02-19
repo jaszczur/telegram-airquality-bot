@@ -5,6 +5,7 @@ import com.pengrad.telegrambot.model.MessageEntity;
 import com.pengrad.telegrambot.model.request.Keyboard;
 import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
 
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -24,6 +25,10 @@ public final class BotUtils {
                 .anyMatch(command::equals);
     }
 
+    public static boolean isTextCommand(Locale locale, Message msg, String textCommand) {
+        return msg.text().equalsIgnoreCase(TextCommands.getText(locale, "cmd.set_station"));
+    }
+
     public static Optional<String> textWithoutCommand(Message msg) {
         return msg.entities() != null
                 ? Stream.of(msg.entities())
@@ -34,10 +39,10 @@ public final class BotUtils {
                 : Optional.of(msg.text());
     }
 
-    public static Keyboard getDefaultKeyboard() {
+    public static Keyboard getDefaultKeyboard(Locale locale) {
         return new ReplyKeyboardMarkup(
-                new String[] {"Podaj aktualne wartości"},
-                new String[] {"Zmień stację"});
+                new String[] {TextCommands.getText(locale, "cmd.refresh")},
+                new String[] {TextCommands.getText(locale, "cmd.set_station")});
     }
 
 }

@@ -7,10 +7,7 @@ import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.BaseResponse;
 import io.reactivex.Single;
 import io.reactivex.SingleSource;
-import pl.jaszczur.bots.aqi.BotUtils;
-import pl.jaszczur.bots.aqi.ChatState;
-import pl.jaszczur.bots.aqi.ChatStates;
-import pl.jaszczur.bots.aqi.UseCase;
+import pl.jaszczur.bots.aqi.*;
 import pl.jaszczur.bots.aqi.aqlogic.AirQualityApi;
 import pl.jaszczur.bots.aqi.aqlogic.Station;
 
@@ -18,11 +15,11 @@ import java.util.EnumSet;
 import java.util.Set;
 
 import static pl.jaszczur.bots.aqi.BotUtils.isCommand;
+import static pl.jaszczur.bots.aqi.BotUtils.isTextCommand;
 import static pl.jaszczur.bots.aqi.BotUtils.textWithoutCommand;
 
 public class SetLocationCommand implements Command {
     public static final String COMMAND = "/set_station";
-    public static final String LONG_COMMAND = "Zmień stację";
     private ChatStates chatStates;
     private AirQualityApi aqApi;
 
@@ -67,7 +64,7 @@ public class SetLocationCommand implements Command {
                 .map(station -> {
                     chatState.setStation(station);
                     chatState.setUseCase(UseCase.GETTING_UPDATES);
-                    return new SendMessage(chat.id(), "Ustawiono stację " + station.getName()).replyMarkup(BotUtils.getDefaultKeyboard());
+                    return new SendMessage(chat.id(), "Ustawiono stację " + station.getName()).replyMarkup(BotUtils.getDefaultKeyboard(chatState.getLanguage()));
                 })
                 .onErrorReturn(err -> new SendMessage(chat.id(), "Nie znaleziono takiej stacji"));
     }
@@ -93,8 +90,11 @@ public class SetLocationCommand implements Command {
 
     @Override
     public boolean canHandle(Message msg) {
-        UseCase useCase = chatStates.getState(msg.chat()).getUseCase();
-        return useCase == UseCase.SETTING_LOCATION || isCommand(msg, COMMAND) || msg.text().equalsIgnoreCase(LONG_COMMAND);
+        ChatState chatState = chatStates.getState(msg.chat());
+        UseCase useCase = chatState.getUseCase();
+        return useCase == UseCase.SETTING_LOCATION
+                || isCommand(msg, COMMAND)
+                || isTextCommand(chatState.getLanguage(), msg, "btn.set_station");
     }
 
     @Override

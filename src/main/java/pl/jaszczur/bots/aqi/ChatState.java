@@ -2,9 +2,12 @@ package pl.jaszczur.bots.aqi;
 
 import pl.jaszczur.bots.aqi.aqlogic.Station;
 
+import java.util.Locale;
+
 public class ChatState {
     private Station station;
     private UseCase useCase = UseCase.NONE;
+    private Locale language = Locale.forLanguageTag("pl_PL");
 
     public Station getStation() {
         return station;
@@ -20,5 +23,13 @@ public class ChatState {
 
     public void setUseCase(UseCase useCase) {
         this.useCase = useCase;
+    }
+
+    public Locale getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(Locale language) {
+        this.language = language;
     }
 }

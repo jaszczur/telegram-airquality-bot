@@ -34,13 +34,11 @@ public class GetAirQualityCommand implements Command {
         ChatState chatState = chatStates.getState(chat);
         Station station = chatState.getStation();
         if (station == null) {
-            return Single.just(createMessage(chat, "Nie ustawiłeś/aś jeszcze stacji"));
+            return Single.just(createMessage(chat, chatState, "Nie ustawiłeś/aś jeszcze stacji"));
         } else {
             return airQualityApi.getStats(station.getId())
-                    .map(aqi -> createMessage(chat, formatMessage(aqi)))
-                    .onErrorReturn(err -> {
-                        return createMessage(chat, "Coś nie bangla. Chyba podana stacja nie istnieje");
-                    });
+                    .map(aqi -> createMessage(chat, chatState, formatMessage(aqi)))
+                    .onErrorReturn(err -> createMessage(chat, chatState, "Coś nie bangla. Chyba podana stacja nie istnieje"));
         }
 
     }
@@ -55,10 +53,10 @@ public class GetAirQualityCommand implements Command {
         return EnumSet.of(UseCase.GETTING_UPDATES);
     }
 
-    private SendMessage createMessage(Chat chat, String text) {
+    private SendMessage createMessage(Chat chat, ChatState chatState, String text) {
         return new SendMessage(chat.id(), text)
                 .parseMode(ParseMode.Markdown)
-                .replyMarkup(BotUtils.getDefaultKeyboard());
+                .replyMarkup(BotUtils.getDefaultKeyboard(chatState.getLanguage()));
     }
 
     private String formatMessage(AirQualityResult airQualityResult) {
