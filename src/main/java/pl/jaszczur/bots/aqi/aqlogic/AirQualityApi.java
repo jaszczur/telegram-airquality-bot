@@ -98,7 +98,7 @@ public class AirQualityApi {
             for (Map.Entry<String, JsonValue> entry : jsonValues.entrySet()) {
                 PartType.getByApiName(entry.getKey())
                         .ifPresent(partType ->
-                                valuesBuilder.put(partType, ((JsonNumber) entry.getValue()).doubleValue()));
+                                valuesBuilder.put(partType, partType.getFactor() * ((JsonNumber) entry.getValue()).doubleValue()));
             }
             return new AirQualityResult(station, valuesBuilder.build());
         }
