@@ -1,8 +1,6 @@
 package pl.jaszczur.bots.aqi;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-import com.google.gson.internal.$Gson$Preconditions;
 
 import java.util.Locale;
 import java.util.Map;
