@@ -2,6 +2,7 @@ package pl.jaszczur.bots.aqi;
 
 import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Message;
+import com.pengrad.telegrambot.model.request.ParseMode;
 import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.BaseResponse;
@@ -24,14 +25,19 @@ public class SetLocationCommand implements Command {
     @Override
     public Single<? extends BaseRequest<?, ? extends BaseResponse>> handle(Message message) {
         Chat chat = message.chat();
+        ChatState chatState = chatStates.getState(chat);
         try {
             long stationId = Long.parseLong(textWithoutCommand(message).get());
-            ChatState chatState = chatStates.getState(chat);
             chatState.setStationId(stationId);
             chatState.setUseCase(UseCase.GETTING_UPDATES);
             return Single.just(new SendMessage(chat.id(), "Ustawione :)"));
         } catch (NumberFormatException ex) {
-            return Single.just(new SendMessage(chat.id(), "Podaj numer stacji, np 117"));
+            chatState.setUseCase(UseCase.SETTING_LOCATION);
+            return Single.just(new SendMessage(chat.id(),
+                    "Podaj numer stacji.\n" +
+                            "Wyszukiwarka stacji znajduje się na stronie [http://powietrze.gios.gov.pl/pjp/station/search]. " +
+                            "Po kliknięciu w wybraną stację jej numer pokaże się w adresie URL (na końcu, np 117).")
+                    .parseMode(ParseMode.Markdown));
         }
     }
 

@@ -5,8 +5,8 @@ public enum AirQualityIndex {
     GOOD("✅ dobry"),
     MODERATE("⚠ umiarkowany"),
     SUFFICIENT("⚠ dostateczny"),
-    BAD("\uDD98 zły"),
-    VERY_BAD("\uDD98 tragiczny");
+    BAD("\uD83C\uDD98 zły"),
+    VERY_BAD("\uD83C\uDD98 tragiczny");
 
     private String uiIndicator;
 
