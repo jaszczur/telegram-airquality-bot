@@ -1,5 +1,6 @@
 package pl.jaszczur.bots.aqi;
 
+import com.google.common.base.Strings;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.TelegramBotAdapter;
 import com.pengrad.telegrambot.UpdatesListener;
@@ -57,7 +58,12 @@ public class Main {
     public static void main(String[] args) {
         logger.info("Starting the bot");
         String botApiKey = args.length > 0 ? args[0] : System.getenv("TELEGRAM_BOT_KEY");
-        new Main(TelegramBotAdapter.build(botApiKey)).start();
+        if (Strings.isNullOrEmpty(botApiKey)) {
+            logger.error("Specify TELEGRAM_BOT_KEY by defining env variable or providing an argument");
+            System.exit(-1);
+        } else {
+            new Main(TelegramBotAdapter.build(botApiKey)).start();
+        }
     }
 
 }
