@@ -70,7 +70,7 @@ public class GetAirQualityCommand implements Command {
         for (PartType partType : airQualityResult.getAvailableParticleTypes()) {
             double value = airQualityResult.getValue(partType).get();
             result.append(" - ")
-                    .append(partType)
+                    .append(partType.getUiName())
                     .append(": *")
                     .append(value)
                     .append(" µg/m³* ")
