@@ -5,8 +5,6 @@ import com.pengrad.telegrambot.TelegramBotAdapter;
 import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Update;
 import io.reactivex.Flowable;
-import io.reactivex.subjects.PublishSubject;
-import io.reactivex.subjects.Subject;
 
 public class Main {
     private final TelegramBot bot;
@@ -21,7 +19,7 @@ public class Main {
     public void start() {
         StartCommand startCommand = new StartCommand(chatStates);
         SetLocationCommand setLocationCommand = new SetLocationCommand(chatStates);
-        GetAirQualityCommand getAirQualityCommand = new GetAirQualityCommand(new AirQualityApi(), chatStates);
+        GetAirQualityCommand getAirQualityCommand = new GetAirQualityCommand(new AirQualityApi(), new AirQualityIndexProvider(), chatStates);
 
         botHandler
                 .addCommand(startCommand)

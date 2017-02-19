@@ -9,7 +9,7 @@ import java.util.EnumSet;
 import java.util.Set;
 
 public interface Command {
-    Single<BaseRequest<?, ? extends BaseResponse>> handle(Message msg);
+    Single<? extends BaseRequest<?, ? extends BaseResponse>> handle(Message msg);
     boolean canHandle(Message msg);
     default Set<UseCase> availableUseCases() {
         return EnumSet.allOf(UseCase.class);

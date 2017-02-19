@@ -3,6 +3,7 @@ package pl.jaszczur.bots.aqi;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.request.SendMessage;
+import com.pengrad.telegrambot.response.BaseResponse;
 import io.reactivex.Single;
 
 import java.util.EnumSet;
@@ -16,7 +17,7 @@ public class StartCommand implements Command {
     }
 
     @Override
-    public Single<BaseRequest<?, ?>> handle(Message msg) {
+    public Single<? extends BaseRequest<?, ? extends BaseResponse>> handle(Message msg) {
         SendMessage reply = new SendMessage(msg.chat().id(), "Siema. Najpierw proponuję ustawić swoją lokalizację.");
         states.getState(msg.chat()).setUseCase(UseCase.SETTING_LOCATION);
         return Single.just(reply);

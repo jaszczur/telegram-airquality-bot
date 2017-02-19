@@ -42,11 +42,9 @@ public class AirQualityApi {
         ImmutableMap.Builder<PartType, Double> valuesBuilder = ImmutableMap.builder();
 
         for (Map.Entry<String, JsonValue> entry : jsonValues.entrySet()) {
-            for (PartType partType : PartType.values()) {
-                if (partType.getApiName().equals(entry.getKey())) {
-                    valuesBuilder.put(partType, ((JsonNumber) entry.getValue()).doubleValue());
-                }
-            }
+            PartType.getByApiName(entry.getKey())
+                    .ifPresent(partType ->
+                            valuesBuilder.put(partType, ((JsonNumber) entry.getValue()).doubleValue()));
         }
         return new AirQualityResult(station, valuesBuilder.build());
     }

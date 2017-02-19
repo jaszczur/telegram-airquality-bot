@@ -5,32 +5,33 @@ import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.request.ParseMode;
 import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.request.SendMessage;
+import com.pengrad.telegrambot.response.BaseResponse;
 import io.reactivex.Single;
-import io.reactivex.functions.Function;
 
 import java.util.EnumSet;
 import java.util.Set;
 
 public class GetAirQualityCommand implements Command {
     private final AirQualityApi airQualityApi;
+    private final AirQualityIndexProvider aqiProvider;
     private final ChatStates chatStates;
 
-    public GetAirQualityCommand(AirQualityApi airQualityApi, ChatStates chatStates) {
+    public GetAirQualityCommand(AirQualityApi airQualityApi, AirQualityIndexProvider aqiProvider, ChatStates chatStates) {
         this.airQualityApi = airQualityApi;
+        this.aqiProvider = aqiProvider;
         this.chatStates = chatStates;
     }
 
     @Override
-    public Single<BaseRequest<?, ?>> handle(Message message) {
+    public Single<? extends BaseRequest<?, ? extends BaseResponse>> handle(Message message) {
         Chat chat = message.chat();
         ChatState chatState = chatStates.getState(chat);
         Long stationId = chatState.getStationId();
         if (stationId == null) {
             return Single.just(createMessage(chat, "Nie ustawiłeś/aś jeszcze stacji"));
         } else {
-            Function<AirQualityResult, BaseRequest<?, ?>> airQualityResultConsumer = aqi -> createMessage(chat, formatMessage(aqi));
             return airQualityApi.getStats(stationId)
-                    .map(airQualityResultConsumer)
+                    .map(aqi -> createMessage(chat, formatMessage(aqi)))
                     .onErrorReturn(err -> {
                         chatState.setUseCase(UseCase.SETTING_LOCATION);
                         return createMessage(chat, "Coś nie bangla. Chyba podałeś/aś niepoprawny numer stacji");
@@ -57,8 +58,18 @@ public class GetAirQualityCommand implements Command {
     }
 
     private String formatMessage(AirQualityResult airQualityResult) {
-        return airQualityResult.getStation().getName() + ":\n"
-                + " - Pyłki PM2.5: *" + airQualityResult.getValues().get(PartType.PM25) + " µg/m³*\n"
-                + " - Pyłki PM10: *" + airQualityResult.getValues().get(PartType.PM10) + " µg/m³*\n";
+        StringBuilder result = new StringBuilder(airQualityResult.getStation().getName());
+        result.append("\n");
+        for (PartType partType : airQualityResult.getAvailableParticleTypes()) {
+            double value = airQualityResult.getValue(partType).get();
+            result.append(" - ")
+                    .append(partType)
+                    .append(": *")
+                    .append(value)
+                    .append(" µg/m³* ")
+                    .append(aqiProvider.get(partType, value).getUiIndicator())
+                    .append("\n");
+        }
+        return result.toString();
     }
 }

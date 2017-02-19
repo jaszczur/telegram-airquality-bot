@@ -1,6 +1,8 @@
 package pl.jaszczur.bots.aqi;
 
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 class AirQualityResult {
     private final Station station;
@@ -15,8 +17,12 @@ class AirQualityResult {
         return station;
     }
 
-    public Map<PartType, Double> getValues() {
-        return values;
+    public Set<PartType> getAvailableParticleTypes() {
+        return values.keySet();
+    }
+
+    public Optional<Double> getValue(PartType partType) {
+        return Optional.ofNullable(values.get(partType));
     }
 
     @Override

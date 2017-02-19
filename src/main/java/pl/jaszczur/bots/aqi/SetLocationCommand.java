@@ -4,6 +4,7 @@ import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.request.SendMessage;
+import com.pengrad.telegrambot.response.BaseResponse;
 import io.reactivex.Single;
 
 import java.util.EnumSet;
@@ -21,7 +22,7 @@ public class SetLocationCommand implements Command {
     }
 
     @Override
-    public Single<BaseRequest<?, ?>> handle(Message message) {
+    public Single<? extends BaseRequest<?, ? extends BaseResponse>> handle(Message message) {
         Chat chat = message.chat();
         try {
             long stationId = Long.parseLong(textWithoutCommand(message).get());
