@@ -8,13 +8,11 @@ import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.BaseResponse;
 import io.reactivex.Single;
+import pl.jaszczur.bots.aqi.BotUtils;
 import pl.jaszczur.bots.aqi.ChatState;
 import pl.jaszczur.bots.aqi.ChatStates;
 import pl.jaszczur.bots.aqi.UseCase;
-import pl.jaszczur.bots.aqi.aqlogic.AirQualityApi;
-import pl.jaszczur.bots.aqi.aqlogic.AirQualityIndexProvider;
-import pl.jaszczur.bots.aqi.aqlogic.AirQualityResult;
-import pl.jaszczur.bots.aqi.aqlogic.PartType;
+import pl.jaszczur.bots.aqi.aqlogic.*;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -34,15 +32,14 @@ public class GetAirQualityCommand implements Command {
     public Single<? extends BaseRequest<?, ? extends BaseResponse>> handle(Message message) {
         Chat chat = message.chat();
         ChatState chatState = chatStates.getState(chat);
-        Long stationId = chatState.getStationId();
-        if (stationId == null) {
+        Station station = chatState.getStation();
+        if (station == null) {
             return Single.just(createMessage(chat, "Nie ustawiłeś/aś jeszcze stacji"));
         } else {
-            return airQualityApi.getStats(stationId)
+            return airQualityApi.getStats(station.getId())
                     .map(aqi -> createMessage(chat, formatMessage(aqi)))
                     .onErrorReturn(err -> {
-                        chatState.setUseCase(UseCase.SETTING_LOCATION);
-                        return createMessage(chat, "Coś nie bangla. Chyba podałeś/aś niepoprawny numer stacji");
+                        return createMessage(chat, "Coś nie bangla. Chyba podana stacja nie istnieje");
                     });
         }
 
@@ -61,7 +58,7 @@ public class GetAirQualityCommand implements Command {
     private SendMessage createMessage(Chat chat, String text) {
         return new SendMessage(chat.id(), text)
                 .parseMode(ParseMode.Markdown)
-                .replyMarkup(new ReplyKeyboardMarkup(new String[]{"Podaj aktualne wartości"}));
+                .replyMarkup(BotUtils.getDefaultKeyboard());
     }
 
     private String formatMessage(AirQualityResult airQualityResult) {

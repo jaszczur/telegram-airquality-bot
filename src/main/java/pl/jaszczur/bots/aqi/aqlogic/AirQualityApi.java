@@ -53,8 +53,9 @@ public class AirQualityApi {
     }
 
     public Single<Set<Station>> getStations(String name) {
+        String lowerCaseName = name.toLowerCase();
         return getStations()
-                .map(ss -> ss.stream().filter(s -> s.getName().contains(name)).collect(Collectors.toSet()))
+                .map(ss -> ss.stream().filter(s -> s.getName().toLowerCase().contains(lowerCaseName)).collect(Collectors.toSet()))
                 .map(ss -> {
                     if(ss.isEmpty()) {
                         throw new NoSuchElementException("No station with name: " + name);
@@ -62,6 +63,14 @@ public class AirQualityApi {
                         return ss;
                     }
                 });
+    }
+
+    public Single<Station> getStation(long stationId) {
+        return getStations()
+                .map(ss -> ss.stream()
+                        .filter(s -> s.getId() == stationId)
+                        .findFirst()
+                        .orElseThrow(() -> new NoSuchElementException("No station with id: " + stationId)));
     }
 
     private class AirQualityDataLoader extends CacheLoader<Long, Single<AirQualityResult>> {

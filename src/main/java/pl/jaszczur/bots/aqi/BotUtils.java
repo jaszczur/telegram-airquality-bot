@@ -2,6 +2,8 @@ package pl.jaszczur.bots.aqi;
 
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.MessageEntity;
+import com.pengrad.telegrambot.model.request.Keyboard;
+import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
 
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -32,5 +34,10 @@ public final class BotUtils {
                 : Optional.of(msg.text());
     }
 
+    public static Keyboard getDefaultKeyboard() {
+        return new ReplyKeyboardMarkup(
+                new String[] {"Podaj aktualne wartości"},
+                new String[] {"Zmień stację"});
+    }
 
 }

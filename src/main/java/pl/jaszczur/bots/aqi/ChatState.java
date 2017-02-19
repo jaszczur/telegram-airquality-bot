@@ -1,15 +1,17 @@
 package pl.jaszczur.bots.aqi;
 
+import pl.jaszczur.bots.aqi.aqlogic.Station;
+
 public class ChatState {
-    private Long stationId;
+    private Station station;
     private UseCase useCase = UseCase.NONE;
 
-    public Long getStationId() {
-        return stationId;
+    public Station getStation() {
+        return station;
     }
 
-    public void setStationId(Long stationId) {
-        this.stationId = stationId;
+    public void setStation(Station station) {
+        this.station = station;
     }
 
     public UseCase getUseCase() {

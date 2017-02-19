@@ -7,6 +7,7 @@ import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.BaseResponse;
 import io.reactivex.Single;
 import io.reactivex.SingleSource;
+import pl.jaszczur.bots.aqi.BotUtils;
 import pl.jaszczur.bots.aqi.ChatState;
 import pl.jaszczur.bots.aqi.ChatStates;
 import pl.jaszczur.bots.aqi.UseCase;
@@ -21,6 +22,7 @@ import static pl.jaszczur.bots.aqi.BotUtils.textWithoutCommand;
 
 public class SetLocationCommand implements Command {
     public static final String COMMAND = "/set_station";
+    public static final String LONG_COMMAND = "Zmień stację";
     private ChatStates chatStates;
     private AirQualityApi aqApi;
 
@@ -36,13 +38,19 @@ public class SetLocationCommand implements Command {
             String text = textWithoutCommand(message).get();
             ChatState chatState = chatStates.getState(chat);
 
+            UseCase previousUseCase = chatState.getUseCase();
             chatState.setUseCase(UseCase.SETTING_LOCATION);
-            if (text.isEmpty()) {
-                return Single.just(new SendMessage(chat.id(), "Podaj nazwę lub numer stacji"));
+
+            if (previousUseCase != UseCase.SETTING_LOCATION || text.isEmpty()) {
+                return askForStationMessage(chat);
             } else {
                 return tryToSetStation(chat, chatState, text);
             }
         });
+    }
+
+    private Single<SendMessage> askForStationMessage(Chat chat) {
+        return Single.just(new SendMessage(chat.id(), "Podaj nazwę lub numer stacji"));
     }
 
     private SingleSource<? extends SendMessage> tryToSetStation(Chat chat, ChatState chatState, String text) {
@@ -55,9 +63,13 @@ public class SetLocationCommand implements Command {
 
     private SingleSource<? extends SendMessage> setStationById(Chat chat, ChatState chatState, String text) {
         long stationId = Long.parseLong(text);
-        chatState.setStationId(stationId);
-        chatState.setUseCase(UseCase.GETTING_UPDATES);
-        return Single.just(new SendMessage(chat.id(), "Ustawione :)"));
+        return aqApi.getStation(stationId)
+                .map(station -> {
+                    chatState.setStation(station);
+                    chatState.setUseCase(UseCase.GETTING_UPDATES);
+                    return new SendMessage(chat.id(), "Ustawiono stację " + station.getName()).replyMarkup(BotUtils.getDefaultKeyboard());
+                })
+                .onErrorReturn(err -> new SendMessage(chat.id(), "Nie znaleziono takiej stacji"));
     }
 
     private SingleSource<? extends SendMessage> findStationByName(Chat chat, String text) {
@@ -82,7 +94,7 @@ public class SetLocationCommand implements Command {
     @Override
     public boolean canHandle(Message msg) {
         UseCase useCase = chatStates.getState(msg.chat()).getUseCase();
-        return useCase == UseCase.SETTING_LOCATION || isCommand(msg, COMMAND);
+        return useCase == UseCase.SETTING_LOCATION || isCommand(msg, COMMAND) || msg.text().equalsIgnoreCase(LONG_COMMAND);
     }
 
     @Override
