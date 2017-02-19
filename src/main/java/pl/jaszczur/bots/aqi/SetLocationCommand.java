@@ -6,15 +6,18 @@ import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.request.SendMessage;
 import io.reactivex.Single;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 import static pl.jaszczur.bots.aqi.BotUtils.isCommand;
 import static pl.jaszczur.bots.aqi.BotUtils.textWithoutCommand;
 
 public class SetLocationCommand implements Command {
     public static final String COMMAND = "/set_station";
-    private BotState botState;
+    private ChatStates chatStates;
 
-    public SetLocationCommand(BotState botState) {
-        this.botState = botState;
+    public SetLocationCommand(ChatStates chatStates) {
+        this.chatStates = chatStates;
     }
 
     @Override
@@ -22,17 +25,23 @@ public class SetLocationCommand implements Command {
         Chat chat = message.chat();
         try {
             long stationId = Long.parseLong(textWithoutCommand(message).get());
-            botState.getStationIdByChatId().put(chat.id(), stationId);
+            ChatState chatState = chatStates.getState(chat);
+            chatState.setStationId(stationId);
+            chatState.setUseCase(UseCase.GETTING_UPDATES);
             return Single.just(new SendMessage(chat.id(), "Ustawione :)"));
         } catch (NumberFormatException ex) {
-
-            return Single.just(new SendMessage(chat.id(), "I to ma być numer? Podaj numer stacji, np 117"));
+            return Single.just(new SendMessage(chat.id(), "Podaj numer stacji, np 117"));
         }
     }
 
     @Override
     public boolean canHandle(Message msg) {
-        return isCommand(msg, COMMAND);
+        UseCase useCase = chatStates.getState(msg.chat()).getUseCase();
+        return useCase == UseCase.SETTING_LOCATION || isCommand(msg, COMMAND);
     }
 
+    @Override
+    public Set<UseCase> availableUseCases() {
+        return EnumSet.of(UseCase.SETTING_LOCATION, UseCase.GETTING_UPDATES);
+    }
 }

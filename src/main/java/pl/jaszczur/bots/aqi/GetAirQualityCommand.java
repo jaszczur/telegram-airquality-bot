@@ -8,32 +8,28 @@ import com.pengrad.telegrambot.request.SendMessage;
 import io.reactivex.Single;
 import io.reactivex.functions.Function;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 public class GetAirQualityCommand implements Command {
     private final AirQualityApi airQualityApi;
-    private final BotState state;
+    private final ChatStates chatStates;
 
-    public GetAirQualityCommand(AirQualityApi airQualityApi, BotState state) {
+    public GetAirQualityCommand(AirQualityApi airQualityApi, ChatStates chatStates) {
         this.airQualityApi = airQualityApi;
-        this.state = state;
+        this.chatStates = chatStates;
     }
 
     @Override
     public Single<BaseRequest<?, ?>> handle(Message message) {
         Chat chat = message.chat();
-        try {
-            long stationId = Long.parseLong(message.text());
-            return checkAirQuality(chat, stationId, aqi -> {
-                state.getStationIdByChatId().put(chat.id(), stationId);
-                return createMessage(chat, formatMessage(aqi));
-            });
-        } catch (NumberFormatException ex) {
-            Long stationId = state.getStationIdByChatId().get(chat.id());
-            if (stationId == null) {
-                return Single.just(createMessage(chat, "Podaj numer stacji, np 117"));
-            } else {
-                return checkAirQuality(chat, stationId, aqi -> createMessage(chat, formatMessage(aqi)));
-            }
+        Long stationId = chatStates.getState(chat).getStationId();
+        if (stationId == null) {
+            return Single.just(createMessage(chat, "Nie ustawiłeś/aś jeszcze stacji"));
+        } else {
+            return checkAirQuality(chat, stationId, aqi -> createMessage(chat, formatMessage(aqi)));
         }
+
     }
 
     @Override
@@ -41,6 +37,10 @@ public class GetAirQualityCommand implements Command {
         return true;
     }
 
+    @Override
+    public Set<UseCase> availableUseCases() {
+        return EnumSet.of(UseCase.GETTING_UPDATES);
+    }
 
     private Single<BaseRequest<?, ?>> checkAirQuality(Chat chat, long stationId, Function<AirQualityResult, BaseRequest<?, ?>> airQualityResultConsumer) {
         return airQualityApi.getStats(stationId)

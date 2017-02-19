@@ -29,7 +29,7 @@ public final class BotUtils {
                 .map(ent -> msg.text().substring(ent.offset() + ent.length()))
                 .map(String::trim)
                 .findFirst()
-                : Optional.empty();
+                : Optional.of(msg.text());
     }
 
 

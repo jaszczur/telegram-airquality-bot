@@ -5,34 +5,28 @@ import com.pengrad.telegrambot.TelegramBotAdapter;
 import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
-import com.pengrad.telegrambot.model.request.Keyboard;
-import com.pengrad.telegrambot.model.request.KeyboardButton;
-import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 
 public class Main {
     private final TelegramBot bot;
     private final BotHandler botHandler;
-    private BotState botState = new BotState();
+    private ChatStates chatStates = new ChatStates();
 
     public Main(TelegramBot bot) {
         this.bot = bot;
-        this.botHandler = new BotHandler(bot);
+        this.botHandler = new BotHandler(bot, chatStates);
     }
 
     public void start() {
-        botHandler
-                .addCommand(new StartCommand())
-                .addCommand(new SetLocationCommand(botState))
-                .addCommand(new GetAirQualityCommand(new AirQualityApi(), botState));
+        StartCommand startCommand = new StartCommand(chatStates);
+        SetLocationCommand setLocationCommand = new SetLocationCommand(chatStates);
+        GetAirQualityCommand getAirQualityCommand = new GetAirQualityCommand(new AirQualityApi(), chatStates);
 
-        Keyboard keyboard = new ReplyKeyboardMarkup(
-                new KeyboardButton[]{
-                        new KeyboardButton("/set_station").requestLocation(true),
-                        new KeyboardButton("/get").requestContact(true)
-                }
-        );
+        botHandler
+                .addCommand(startCommand)
+                .addCommand(setLocationCommand)
+                .addCommand(getAirQualityCommand);
 
         final Subject<Update> updatesSubject = PublishSubject.create();
         updatesSubject.forEach(update -> {
