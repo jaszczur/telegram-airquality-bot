@@ -57,7 +57,7 @@ public class AirQualityApi {
         public Single<AirQualityResult> load(Long stationId) throws Exception {
             CompletableFuture<Response> responseCompletionStage = client
                     .target("http://powietrze.gios.gov.pl/pjp/current/getAQIDetails")
-                    .queryParam("id", stationId) //117
+                    .queryParam("id", stationId)
                     .queryParam("param", "AQI")
                     .request()
                     .rx()
