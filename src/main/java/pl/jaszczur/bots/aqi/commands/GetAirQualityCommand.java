@@ -8,6 +8,8 @@ import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.BaseResponse;
 import io.reactivex.Single;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.jaszczur.bots.aqi.*;
 import pl.jaszczur.bots.aqi.aqlogic.*;
 
@@ -19,6 +21,7 @@ public class GetAirQualityCommand implements Command {
     private final AirQualityApi airQualityApi;
     private final AirQualityIndexProvider aqiProvider;
     private final ChatStates chatStates;
+    private static final Logger logger = LoggerFactory.getLogger(GetAirQualityCommand.class);
 
     public GetAirQualityCommand(AirQualityApi airQualityApi, AirQualityIndexProvider aqiProvider, ChatStates chatStates) {
         this.airQualityApi = airQualityApi;
@@ -36,7 +39,10 @@ public class GetAirQualityCommand implements Command {
         } else {
             return airQualityApi.getStats(station.getId())
                     .map(aqi -> createMessage(chat, chatState, formatMessage(chatState.getLocale(), aqi)))
-                    .onErrorReturn(err -> createMessage(chat, chatState, "Coś nie bangla. Chyba podana stacja nie istnieje"));
+                    .onErrorReturn(err -> {
+                        logger.warn("Error while sending aq message", err);
+                        return createMessage(chat, chatState, "Coś nie bangla. Chyba podana stacja nie istnieje");
+                    });
         }
 
     }
@@ -65,7 +71,7 @@ public class GetAirQualityCommand implements Command {
             result.append(" - ")
                     .append(partType.getUiName())
                     .append(": *")
-                    .append(value)
+                    .append(String.format(locale, "%.1f", value))
                     .append(" µg/m³* ")
                     .append(TextCommands.getText(locale, aqiProvider.get(partType, value).getUiIndicator()))
                     .append("\n");
