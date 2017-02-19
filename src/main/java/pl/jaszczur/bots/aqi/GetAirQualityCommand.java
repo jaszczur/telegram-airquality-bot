@@ -45,7 +45,7 @@ public class GetAirQualityCommand implements Command {
     private Single<BaseRequest<?, ?>> checkAirQuality(Chat chat, long stationId, Function<AirQualityResult, BaseRequest<?, ?>> airQualityResultConsumer) {
         return airQualityApi.getStats(stationId)
                 .map(airQualityResultConsumer)
-                .onErrorReturn(err -> createMessage(chat, "Coś nie bangla. Chyba podałeś/aś numer stacji z dupy..."));
+                .onErrorReturn(err -> createMessage(chat, "Coś nie bangla. Chyba podałeś/aś niepoprawny numer stacji"));
     }
 
     private SendMessage createMessage(Chat chat, String text) {
