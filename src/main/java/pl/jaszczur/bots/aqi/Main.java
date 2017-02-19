@@ -8,6 +8,7 @@ import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.model.request.ParseMode;
 import com.pengrad.telegrambot.request.SendMessage;
+import io.reactivex.functions.Consumer;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 
@@ -27,24 +28,21 @@ public class Main {
         final Subject<Update> updatesSubject = PublishSubject.create();
 
         updatesSubject.forEach(update -> {
+            Chat chat = update.message().chat();
             try {
                 long stationId = Long.parseLong(update.message().text());
-                airQualityApi.getStats(stationId).subscribe(
-                        aqi -> {
-                            stationIdByChatId.put(update.message().chat().id(), stationId);
-                            sendMessage(update.message().chat(), formatMessage(aqi));
-                        },
-                        err -> sendMessage(update.message().chat(), "Coś nie bangla. Chyba podałeś/aś numer stacji z dupy..."));
+                checkAirQuality(chat, stationId, aqi -> {
+                    stationIdByChatId.put(chat.id(), stationId);
+                    sendMessage(chat, formatMessage(aqi));
+                });
             } catch (NumberFormatException ex) {
-                Long stationId = stationIdByChatId.get(update.message().chat().id());
+                Long stationId = stationIdByChatId.get(chat.id());
                 if (stationId == null) {
-                    sendMessage(update.message().chat(), "Podaj numer stacji, np 117");
+                    sendMessage(chat, "Podaj numer stacji, np 117");
                 } else {
-                    airQualityApi.getStats(stationId).subscribe(
-                            aqi -> {
-                                sendMessage(update.message().chat(), formatMessage(aqi));
-                            },
-                            err -> sendMessage(update.message().chat(), "Coś nie bangla. Chyba podałeś/aś numer stacji z dupy..."));
+                    checkAirQuality(chat, stationId, aqi -> {
+                        sendMessage(chat, formatMessage(aqi));
+                    });
                 }
             }
         });
@@ -53,6 +51,12 @@ public class Main {
             updates.forEach(updatesSubject::onNext);
             return UpdatesListener.CONFIRMED_UPDATES_ALL;
         });
+    }
+
+    private void checkAirQuality(Chat chat, long stationId, Consumer<AirQualityResult> airQualityResultConsumer) {
+        airQualityApi.getStats(stationId).subscribe(
+                airQualityResultConsumer,
+                err -> sendMessage(chat, "Coś nie bangla. Chyba podałeś/aś numer stacji z dupy..."));
     }
 
     private void sendMessage(Chat chat, String text) {
