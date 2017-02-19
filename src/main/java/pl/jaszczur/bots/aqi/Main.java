@@ -22,9 +22,11 @@ public class Main {
     }
 
     public void start() {
+        AirQualityApi airQualityApi = new AirQualityApi();
+
         StartCommand startCommand = new StartCommand(chatStates);
-        SetLocationCommand setLocationCommand = new SetLocationCommand(chatStates);
-        GetAirQualityCommand getAirQualityCommand = new GetAirQualityCommand(new AirQualityApi(), new AirQualityIndexProvider(), chatStates);
+        SetLocationCommand setLocationCommand = new SetLocationCommand(chatStates, airQualityApi);
+        GetAirQualityCommand getAirQualityCommand = new GetAirQualityCommand(airQualityApi, new AirQualityIndexProvider(), chatStates);
 
         botHandler
                 .addCommand(startCommand)

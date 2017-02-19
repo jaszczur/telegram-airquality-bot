@@ -15,6 +15,7 @@ import javax.json.JsonObject;
 import javax.json.JsonValue;
 import javax.ws.rs.core.Response;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -49,6 +50,18 @@ public class AirQualityApi {
                 return Single.error(e);
             }
         });
+    }
+
+    public Single<Set<Station>> getStations(String name) {
+        return getStations()
+                .map(ss -> ss.stream().filter(s -> s.getName().contains(name)).collect(Collectors.toSet()))
+                .map(ss -> {
+                    if(ss.isEmpty()) {
+                        throw new NoSuchElementException("No station with name: " + name);
+                    } else {
+                        return ss;
+                    }
+                });
     }
 
     private class AirQualityDataLoader extends CacheLoader<Long, Single<AirQualityResult>> {
