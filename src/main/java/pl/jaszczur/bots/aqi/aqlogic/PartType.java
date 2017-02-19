@@ -1,4 +1,4 @@
-package pl.jaszczur.bots.aqi;
+package pl.jaszczur.bots.aqi.aqlogic;
 
 import java.util.Optional;
 import java.util.stream.Stream;

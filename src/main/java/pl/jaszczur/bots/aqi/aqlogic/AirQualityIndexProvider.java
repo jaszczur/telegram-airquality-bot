@@ -1,4 +1,4 @@
-package pl.jaszczur.bots.aqi;
+package pl.jaszczur.bots.aqi.aqlogic;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Range;

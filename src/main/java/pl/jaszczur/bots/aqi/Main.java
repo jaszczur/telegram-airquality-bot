@@ -5,6 +5,11 @@ import com.pengrad.telegrambot.TelegramBotAdapter;
 import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Update;
 import io.reactivex.Flowable;
+import pl.jaszczur.bots.aqi.aqlogic.AirQualityApi;
+import pl.jaszczur.bots.aqi.aqlogic.AirQualityIndexProvider;
+import pl.jaszczur.bots.aqi.commands.GetAirQualityCommand;
+import pl.jaszczur.bots.aqi.commands.SetLocationCommand;
+import pl.jaszczur.bots.aqi.commands.StartCommand;
 
 public class Main {
     private final TelegramBot bot;

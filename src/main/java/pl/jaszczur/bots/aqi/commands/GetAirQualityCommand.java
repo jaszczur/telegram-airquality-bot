@@ -1,4 +1,4 @@
-package pl.jaszczur.bots.aqi;
+package pl.jaszczur.bots.aqi.commands;
 
 import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Message;
@@ -7,6 +7,13 @@ import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.BaseResponse;
 import io.reactivex.Single;
+import pl.jaszczur.bots.aqi.ChatState;
+import pl.jaszczur.bots.aqi.ChatStates;
+import pl.jaszczur.bots.aqi.UseCase;
+import pl.jaszczur.bots.aqi.aqlogic.AirQualityApi;
+import pl.jaszczur.bots.aqi.aqlogic.AirQualityIndexProvider;
+import pl.jaszczur.bots.aqi.aqlogic.AirQualityResult;
+import pl.jaszczur.bots.aqi.aqlogic.PartType;
 
 import java.util.EnumSet;
 import java.util.Set;

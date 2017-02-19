@@ -1,4 +1,4 @@
-package pl.jaszczur.bots.aqi;
+package pl.jaszczur.bots.aqi.aqlogic;
 
 public class Station {
     private final long id;

@@ -1,10 +1,10 @@
-package pl.jaszczur.bots.aqi;
+package pl.jaszczur.bots.aqi.aqlogic;
 
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-class AirQualityResult {
+public class AirQualityResult {
     private final Station station;
     private final Map<PartType, Double> values;
 

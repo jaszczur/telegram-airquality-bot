@@ -1,4 +1,4 @@
-package pl.jaszczur.bots.aqi;
+package pl.jaszczur.bots.aqi.aqlogic;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;

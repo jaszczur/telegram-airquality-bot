@@ -1,4 +1,4 @@
-package pl.jaszczur.bots.aqi;
+package pl.jaszczur.bots.aqi.aqlogic;
 
 public enum AirQualityIndex {
     VERY_GOOD("✅ b. dobry"),

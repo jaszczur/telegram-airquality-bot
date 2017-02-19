@@ -1,11 +1,11 @@
 package pl.jaszczur.bots.aqi;
 
 import com.google.common.collect.Lists;
-import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.response.BaseResponse;
 import io.reactivex.Single;
+import pl.jaszczur.bots.aqi.commands.Command;
 
 import java.util.List;
 import java.util.Optional;
