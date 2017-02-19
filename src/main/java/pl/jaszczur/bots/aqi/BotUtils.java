@@ -26,8 +26,6 @@ public final class BotUtils {
     }
 
     public static boolean isTextCommand(Locale locale, Message msg, String textCommand) {
-        logger.debug("111" + msg.text());
-        logger.debug("222" + textCommand);
         return msg.text().equalsIgnoreCase(TextCommands.getText(locale, textCommand));
     }
 
