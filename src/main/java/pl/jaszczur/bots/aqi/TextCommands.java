@@ -15,7 +15,7 @@ public class TextCommands {
                     .put("cmd.refresh", "\uD83D\uDD01 Podaj aktualne wartości")
                     .put("cmd.set_station", "\uD83D\uDD00 Zmień stację")
                     .put("msg.hello", "Siema. Najpierw proponuję ustawić swoją lokalizację.")
-                    .put("enum.AirQualityIndex.VERY_GOOD", "\uD83C\uDF40 b. dobry")
+                    .put("enum.AirQualityIndex.VERY_GOOD", "\uD83C\uDF40 wyśmienity")
                     .put("enum.AirQualityIndex.GOOD", "✅ dobry")
                     .put("enum.AirQualityIndex.MODERATE", "⚠️ umiarkowany")
                     .put("enum.AirQualityIndex.SUFFICIENT", "\uD83D\uDEA8 dostateczny")
