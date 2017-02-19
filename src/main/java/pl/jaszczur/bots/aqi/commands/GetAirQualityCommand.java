@@ -3,6 +3,7 @@ package pl.jaszczur.bots.aqi.commands;
 import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.request.ParseMode;
+import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
 import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.BaseResponse;
@@ -60,8 +61,7 @@ public class GetAirQualityCommand implements Command {
     private SendMessage createMessage(Chat chat, String text) {
         return new SendMessage(chat.id(), text)
                 .parseMode(ParseMode.Markdown)
-                .disableWebPagePreview(true)
-                .disableNotification(true);
+                .replyMarkup(new ReplyKeyboardMarkup(new String[]{"Podaj aktualne wartości"}));
     }
 
     private String formatMessage(AirQualityResult airQualityResult) {
