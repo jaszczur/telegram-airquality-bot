@@ -5,6 +5,7 @@ import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.TelegramBotAdapter;
 import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Update;
+import com.pengrad.telegrambot.response.BaseResponse;
 import io.reactivex.Flowable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,15 +43,14 @@ public class Main {
                     .map(Update::message)
                     .flatMap(message -> botHandler.handle(message).toFlowable())
                     .map(bot::execute)
-                    .map(msg -> {
-                        if (msg.isOk())
-                            return msg;
-                        else throw new MessageDeliveryException(msg);
-                    })
                     .subscribe(
-                            msg -> logger.debug("Reply sent"),
-                            err -> logger.warn("Error occurred", err));
-
+                            msg -> {
+                                if (msg.isOk())
+                                    logger.debug("Reply sent");
+                                else
+                                    logger.warn("Error occurred {}: {}", msg.errorCode(), msg.description());
+                            },
+                            err -> logger.error("What a Terrible Failure", err));
             return UpdatesListener.CONFIRMED_UPDATES_ALL;
         });
     }
