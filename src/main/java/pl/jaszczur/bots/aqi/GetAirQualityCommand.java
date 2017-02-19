@@ -23,11 +23,18 @@ public class GetAirQualityCommand implements Command {
     @Override
     public Single<BaseRequest<?, ?>> handle(Message message) {
         Chat chat = message.chat();
-        Long stationId = chatStates.getState(chat).getStationId();
+        ChatState chatState = chatStates.getState(chat);
+        Long stationId = chatState.getStationId();
         if (stationId == null) {
             return Single.just(createMessage(chat, "Nie ustawiłeś/aś jeszcze stacji"));
         } else {
-            return checkAirQuality(chat, stationId, aqi -> createMessage(chat, formatMessage(aqi)));
+            Function<AirQualityResult, BaseRequest<?, ?>> airQualityResultConsumer = aqi -> createMessage(chat, formatMessage(aqi));
+            return airQualityApi.getStats(stationId)
+                    .map(airQualityResultConsumer)
+                    .onErrorReturn(err -> {
+                        chatState.setUseCase(UseCase.SETTING_LOCATION);
+                        return createMessage(chat, "Coś nie bangla. Chyba podałeś/aś niepoprawny numer stacji");
+                    });
         }
 
     }
@@ -40,12 +47,6 @@ public class GetAirQualityCommand implements Command {
     @Override
     public Set<UseCase> availableUseCases() {
         return EnumSet.of(UseCase.GETTING_UPDATES);
-    }
-
-    private Single<BaseRequest<?, ?>> checkAirQuality(Chat chat, long stationId, Function<AirQualityResult, BaseRequest<?, ?>> airQualityResultConsumer) {
-        return airQualityApi.getStats(stationId)
-                .map(airQualityResultConsumer)
-                .onErrorReturn(err -> createMessage(chat, "Coś nie bangla. Chyba podałeś/aś niepoprawny numer stacji"));
     }
 
     private SendMessage createMessage(Chat chat, String text) {
