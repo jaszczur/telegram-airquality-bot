@@ -56,7 +56,8 @@ public class Main {
 
     public static void main(String[] args) {
         logger.info("Starting the bot");
-        new Main(TelegramBotAdapter.build(args[0])).start();
+        String botApiKey = args.length > 0 ? args[0] : System.getenv("TELEGRAM_BOT_KEY");
+        new Main(TelegramBotAdapter.build(botApiKey)).start();
     }
 
 }
