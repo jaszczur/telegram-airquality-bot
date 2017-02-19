@@ -5,6 +5,8 @@ import com.pengrad.telegrambot.TelegramBotAdapter;
 import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Update;
 import io.reactivex.Flowable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.jaszczur.bots.aqi.aqlogic.AirQualityApi;
 import pl.jaszczur.bots.aqi.aqlogic.AirQualityIndexProvider;
 import pl.jaszczur.bots.aqi.commands.GetAirQualityCommand;
@@ -12,6 +14,7 @@ import pl.jaszczur.bots.aqi.commands.SetLocationCommand;
 import pl.jaszczur.bots.aqi.commands.StartCommand;
 
 public class Main {
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
     private final TelegramBot bot;
     private final BotHandler botHandler;
     private ChatStates chatStates = new ChatStates();
@@ -44,15 +47,15 @@ public class Main {
                         else throw new MessageDeliveryException(msg);
                     })
                     .subscribe(
-                            msg -> System.out.println("Reply sent"),
-                            Throwable::printStackTrace);
+                            msg -> logger.debug("Reply sent"),
+                            err -> logger.warn("Error occurred", err));
 
             return UpdatesListener.CONFIRMED_UPDATES_ALL;
         });
     }
 
     public static void main(String[] args) {
-        System.out.println("Odpytujemy serwera");
+        logger.info("Starting the bot");
         new Main(TelegramBotAdapter.build(args[0])).start();
     }
 

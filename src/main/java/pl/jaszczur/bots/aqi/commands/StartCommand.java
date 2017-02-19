@@ -24,7 +24,7 @@ public class StartCommand implements Command {
     public Single<? extends BaseRequest<?, ? extends BaseResponse>> handle(Message msg) {
         ChatState chatState = states.getState(msg.chat());
         chatState.setUseCase(UseCase.SETTING_LOCATION);
-        SendMessage reply = new SendMessage(msg.chat().id(), TextCommands.getText(chatState.getLanguage(), "msg.hello"));
+        SendMessage reply = new SendMessage(msg.chat().id(), TextCommands.getText(chatState.getLocale(), "msg.hello"));
         return Single.just(reply);
     }
 

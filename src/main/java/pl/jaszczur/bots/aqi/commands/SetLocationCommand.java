@@ -64,7 +64,7 @@ public class SetLocationCommand implements Command {
                 .map(station -> {
                     chatState.setStation(station);
                     chatState.setUseCase(UseCase.GETTING_UPDATES);
-                    return new SendMessage(chat.id(), "Ustawiono stację " + station.getName()).replyMarkup(BotUtils.getDefaultKeyboard(chatState.getLanguage()));
+                    return new SendMessage(chat.id(), "Ustawiono stację " + station.getName()).replyMarkup(BotUtils.getDefaultKeyboard(chatState.getLocale()));
                 })
                 .onErrorReturn(err -> new SendMessage(chat.id(), "Nie znaleziono takiej stacji"));
     }
@@ -94,7 +94,7 @@ public class SetLocationCommand implements Command {
         UseCase useCase = chatState.getUseCase();
         return useCase == UseCase.SETTING_LOCATION
                 || isCommand(msg, COMMAND)
-                || isTextCommand(chatState.getLanguage(), msg, "btn.set_station");
+                || isTextCommand(chatState.getLocale(), msg, "cmd.set_station");
     }
 
     @Override

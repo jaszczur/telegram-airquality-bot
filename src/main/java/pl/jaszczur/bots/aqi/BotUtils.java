@@ -4,12 +4,16 @@ import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.MessageEntity;
 import com.pengrad.telegrambot.model.request.Keyboard;
 import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 public final class BotUtils {
+    private static final Logger logger = LoggerFactory.getLogger(BotUtils.class);
+
     private BotUtils() {
         // prevent creation
     }
@@ -18,15 +22,13 @@ public final class BotUtils {
         return msg.entities() != null && Stream.of(msg.entities())
                 .filter(ent -> ent.type() == MessageEntity.Type.bot_command)
                 .map(ent -> msg.text().substring(ent.offset(), ent.length()))
-                .map(cmd -> {
-                    System.out.println(cmd);
-                    return cmd;
-                })
                 .anyMatch(command::equals);
     }
 
     public static boolean isTextCommand(Locale locale, Message msg, String textCommand) {
-        return msg.text().equalsIgnoreCase(TextCommands.getText(locale, "cmd.set_station"));
+        logger.debug("111" + msg.text());
+        logger.debug("222" + textCommand);
+        return msg.text().equalsIgnoreCase(TextCommands.getText(locale, textCommand));
     }
 
     public static Optional<String> textWithoutCommand(Message msg) {

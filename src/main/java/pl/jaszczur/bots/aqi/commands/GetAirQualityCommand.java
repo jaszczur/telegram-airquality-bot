@@ -3,18 +3,15 @@ package pl.jaszczur.bots.aqi.commands;
 import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.request.ParseMode;
-import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
 import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.BaseResponse;
 import io.reactivex.Single;
-import pl.jaszczur.bots.aqi.BotUtils;
-import pl.jaszczur.bots.aqi.ChatState;
-import pl.jaszczur.bots.aqi.ChatStates;
-import pl.jaszczur.bots.aqi.UseCase;
+import pl.jaszczur.bots.aqi.*;
 import pl.jaszczur.bots.aqi.aqlogic.*;
 
 import java.util.EnumSet;
+import java.util.Locale;
 import java.util.Set;
 
 public class GetAirQualityCommand implements Command {
@@ -37,7 +34,7 @@ public class GetAirQualityCommand implements Command {
             return Single.just(createMessage(chat, chatState, "Nie ustawiłeś/aś jeszcze stacji"));
         } else {
             return airQualityApi.getStats(station.getId())
-                    .map(aqi -> createMessage(chat, chatState, formatMessage(aqi)))
+                    .map(aqi -> createMessage(chat, chatState, formatMessage(chatState.getLocale(), aqi)))
                     .onErrorReturn(err -> createMessage(chat, chatState, "Coś nie bangla. Chyba podana stacja nie istnieje"));
         }
 
@@ -56,10 +53,10 @@ public class GetAirQualityCommand implements Command {
     private SendMessage createMessage(Chat chat, ChatState chatState, String text) {
         return new SendMessage(chat.id(), text)
                 .parseMode(ParseMode.Markdown)
-                .replyMarkup(BotUtils.getDefaultKeyboard(chatState.getLanguage()));
+                .replyMarkup(BotUtils.getDefaultKeyboard(chatState.getLocale()));
     }
 
-    private String formatMessage(AirQualityResult airQualityResult) {
+    private String formatMessage(Locale locale, AirQualityResult airQualityResult) {
         StringBuilder result = new StringBuilder(airQualityResult.getStation().getName());
         result.append("\n");
         for (PartType partType : airQualityResult.getAvailableParticleTypes()) {
@@ -69,7 +66,7 @@ public class GetAirQualityCommand implements Command {
                     .append(": *")
                     .append(value)
                     .append(" µg/m³* ")
-                    .append(aqiProvider.get(partType, value).getUiIndicator())
+                    .append(TextCommands.getText(locale, aqiProvider.get(partType, value).getUiIndicator()))
                     .append("\n");
         }
         return result.toString();

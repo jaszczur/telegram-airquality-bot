@@ -25,7 +25,7 @@ public class ChatState {
         this.useCase = useCase;
     }
 
-    public Locale getLanguage() {
+    public Locale getLocale() {
         return language;
     }
 
