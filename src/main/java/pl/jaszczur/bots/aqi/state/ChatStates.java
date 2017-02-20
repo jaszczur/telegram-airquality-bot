@@ -5,9 +5,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableMap;
 import com.pengrad.telegrambot.model.Chat;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;

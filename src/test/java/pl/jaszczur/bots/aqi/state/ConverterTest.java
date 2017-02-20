@@ -2,7 +2,6 @@ package pl.jaszczur.bots.aqi.state;
 
 import com.google.common.collect.ImmutableMap;
 import com.pengrad.telegrambot.model.Chat;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import pl.jaszczur.bots.aqi.UseCase;
 import pl.jaszczur.bots.aqi.aqlogic.Station;
@@ -10,11 +9,9 @@ import pl.jaszczur.bots.aqi.aqlogic.Station;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
-import javax.json.JsonValue;
-import java.io.File;
 import java.util.Locale;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 

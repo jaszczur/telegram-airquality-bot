@@ -7,7 +7,8 @@ import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.BaseResponse;
 import io.reactivex.Single;
 import io.reactivex.SingleSource;
-import pl.jaszczur.bots.aqi.*;
+import pl.jaszczur.bots.aqi.BotUtils;
+import pl.jaszczur.bots.aqi.UseCase;
 import pl.jaszczur.bots.aqi.aqlogic.AirQualityApi;
 import pl.jaszczur.bots.aqi.aqlogic.Station;
 import pl.jaszczur.bots.aqi.state.ChatState;
@@ -16,12 +17,10 @@ import pl.jaszczur.bots.aqi.state.ChatStates;
 import java.util.EnumSet;
 import java.util.Set;
 
-import static pl.jaszczur.bots.aqi.BotUtils.isCommand;
-import static pl.jaszczur.bots.aqi.BotUtils.isTextCommand;
-import static pl.jaszczur.bots.aqi.BotUtils.textWithoutCommand;
+import static pl.jaszczur.bots.aqi.BotUtils.*;
 
 public class SetLocationCommand implements Command {
-    public static final String COMMAND = "/set_station";
+    private static final String COMMAND = "/set_station";
     private ChatStates chatStates;
     private AirQualityApi aqApi;
 
