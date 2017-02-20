@@ -10,7 +10,6 @@ import pl.jaszczur.bots.aqi.UseCase;
 import pl.jaszczur.bots.aqi.aqlogic.Station;
 
 import javax.json.*;
-import javax.json.stream.JsonParser;
 import java.io.*;
 import java.util.Locale;
 import java.util.Map;
@@ -45,7 +44,7 @@ public class Storage {
                 JsonObject jsonChatState = (JsonObject) jsonChatStateValue;
                 long chatId = jsonChatState.getJsonNumber("chatId").longValue();
                 UseCase useCase = UseCase.valueOf(jsonChatState.getString("useCase"));
-                String languageTag = jsonChatState.getString("language");
+                String lang = jsonChatState.getString("language");
 
                 JsonObject jsonStation = jsonChatState.getJsonObject("station");
                 long stationId = jsonStation.getJsonNumber("id").longValue();
@@ -55,7 +54,7 @@ public class Storage {
                 ChatState chatState = new ChatState();
                 chatState.setStation(station);
                 chatState.setUseCase(useCase);
-                chatState.setLanguage(Locale.forLanguageTag(languageTag));
+                chatState.setLanguage(new Locale(lang));
 
                 statesBuilder.put(chatId, chatState);
             }
@@ -71,7 +70,32 @@ public class Storage {
         Flowable.interval(20, 60, TimeUnit.SECONDS)
                 .subscribeOn(Schedulers.io())
                 .subscribe(whatever -> {
-                        //  logger.debug("todo");
+                    JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+
+                    for (Map.Entry<Long, ChatState> chatStateEntry : chatStates.getAll().entrySet()) {
+                        JsonObject jsonStation = Json.createObjectBuilder()
+                                .add("id", chatStateEntry.getValue().getStation().getId())
+                                .add("name", chatStateEntry.getValue().getStation().getId())
+                                .build();
+
+                        JsonObject jsonChatState = Json.createObjectBuilder()
+                                .add("chatId", chatStateEntry.getKey())
+                                .add("useCase", chatStateEntry.getValue().getUseCase().name())
+                                .add("language", chatStateEntry.getValue().getLocale().getLanguage())
+                                .add("station", jsonStation)
+                                .build();
+
+                        jsonArrayBuilder.add(jsonChatState);
+                    }
+                    JsonObject root = Json.createObjectBuilder().add("chatStates", jsonArrayBuilder.build()).build();
+                    
+                    try (OutputStream is = new FileOutputStream(file);
+                         JsonWriter json = Json.createWriter(is)) {
+                        json.writeObject(root);
+                    } catch (IOException e) {
+                        logger.warn("Error while restoring state from file {}. Creating new state.", file, e);
+                    }
+
                 });
     }
 }
