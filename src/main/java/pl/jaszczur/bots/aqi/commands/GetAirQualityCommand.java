@@ -45,7 +45,7 @@ public class GetAirQualityCommand implements Command {
                     .map(aqi -> createMessage(chat, chatState, formatMessage(chatState.getLocale(), aqi)))
                     .onErrorReturn(err -> {
                         logger.warn("Error while sending aq message", err);
-                        return createMessage(chat, chatState, "Coś nie bangla. Chyba podana stacja nie istnieje");
+                        return createMessage(chat, chatState, "Coś nie bangla. Chyba podana stacja nie istnieje \uD83D\uDE14");
                     });
         }
 
