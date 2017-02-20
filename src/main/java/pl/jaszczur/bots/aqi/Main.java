@@ -31,10 +31,12 @@ public class Main {
     }
 
     private void start() {
-        storage.load().subscribe(chatStates -> {
-            final BotHandler botHandler = createBotHandler(chatStates);
-            bot.setUpdatesListener(updates -> processUpdates(botHandler, updates));
-        });
+        storage.load().subscribe(
+                chatStates -> {
+                    final BotHandler botHandler = createBotHandler(chatStates);
+                    bot.setUpdatesListener(updates -> processUpdates(botHandler, updates));
+                },
+                err -> logger.error(err.getMessage(), err));
     }
 
     private int processUpdates(BotHandler botHandler, List<Update> updates) {
