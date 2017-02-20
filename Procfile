@@ -1,1 +1,1 @@
-tg: java -jar target/telegram-aqi-bot.jar
+tg: java -jar build/libs/telegram-airquality-bot-1.0-all.jar

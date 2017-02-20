@@ -1,4 +1,42 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = 1.8
+version = '1.0'
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'Air Quality Index bot for Telegram',
+                   'Implementation-Version': version,
+                   'Main-Class': 'pl.jaszczur.bots.aqi.Main'
+    }
+}
+
+dependencies {
+    compile group: 'io.reactivex.rxjava2', name: 'rxjava', version: '2.0.6'
+    compile group: 'com.google.guava', name: 'guava', version: '21.0'
+    compile group: 'com.github.pengrad', name: 'java-telegram-bot-api', version: '2.3.1.1'
+    compile group: 'org.glassfish.jersey.ext.rx', name: 'jersey-rx-client', version: '2.25.1'
+    compile group: 'org.glassfish.jersey.ext.rx', name: 'jersey-rx-client-java8', version: '2.25.1'
+    compile group: 'org.glassfish.jersey.media', name: 'jersey-media-json-processing', version: '2.25.1'
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.1'
+}
+
 task wrapper(type: Wrapper) {
     gradleVersion = '3.3'
 }
 
+task stage(dependsOn: ['shadowJar', 'clean'])
+shadowJar.mustRunAfter clean
