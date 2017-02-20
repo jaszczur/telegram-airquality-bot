@@ -31,6 +31,12 @@ public class Storage {
         });
     }
 
+    private void savePeriodically(ChatStates chatStates) {
+        Flowable.interval(20, 60, TimeUnit.SECONDS)
+                .subscribeOn(Schedulers.io())
+                .subscribe(whatever -> saveToFile(chatStates));
+    }
+
     private ChatStates loadFromFile() {
         ChatStates result = new ChatStates();
         try (InputStream is = new FileInputStream(file);
@@ -66,36 +72,31 @@ public class Storage {
         return result;
     }
 
-    private void savePeriodically(ChatStates chatStates) {
-        Flowable.interval(20, 60, TimeUnit.SECONDS)
-                .subscribeOn(Schedulers.io())
-                .subscribe(whatever -> {
-                    JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+    private void saveToFile(ChatStates chatStates) {
+        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
 
-                    for (Map.Entry<Long, ChatState> chatStateEntry : chatStates.getAll().entrySet()) {
-                        JsonObject jsonStation = Json.createObjectBuilder()
-                                .add("id", chatStateEntry.getValue().getStation().getId())
-                                .add("name", chatStateEntry.getValue().getStation().getId())
-                                .build();
+        for (Map.Entry<Long, ChatState> chatStateEntry : chatStates.getAll().entrySet()) {
+            JsonObject jsonStation = Json.createObjectBuilder()
+                    .add("id", chatStateEntry.getValue().getStation().getId())
+                    .add("name", chatStateEntry.getValue().getStation().getId())
+                    .build();
 
-                        JsonObject jsonChatState = Json.createObjectBuilder()
-                                .add("chatId", chatStateEntry.getKey())
-                                .add("useCase", chatStateEntry.getValue().getUseCase().name())
-                                .add("language", chatStateEntry.getValue().getLocale().getLanguage())
-                                .add("station", jsonStation)
-                                .build();
+            JsonObject jsonChatState = Json.createObjectBuilder()
+                    .add("chatId", chatStateEntry.getKey())
+                    .add("useCase", chatStateEntry.getValue().getUseCase().name())
+                    .add("language", chatStateEntry.getValue().getLocale().getLanguage())
+                    .add("station", jsonStation)
+                    .build();
 
-                        jsonArrayBuilder.add(jsonChatState);
-                    }
-                    JsonObject root = Json.createObjectBuilder().add("chatStates", jsonArrayBuilder.build()).build();
-                    
-                    try (OutputStream is = new FileOutputStream(file);
-                         JsonWriter json = Json.createWriter(is)) {
-                        json.writeObject(root);
-                    } catch (IOException e) {
-                        logger.warn("Error while restoring state from file {}. Creating new state.", file, e);
-                    }
+            jsonArrayBuilder.add(jsonChatState);
+        }
+        JsonObject root = Json.createObjectBuilder().add("chatStates", jsonArrayBuilder.build()).build();
 
-                });
+        try (OutputStream is = new FileOutputStream(file);
+             JsonWriter json = Json.createWriter(is)) {
+            json.writeObject(root);
+        } catch (IOException e) {
+            logger.warn("Error while storing chat states to file {}.", file, e);
+        }
     }
 }
