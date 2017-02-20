@@ -1,3 +1,5 @@
+ext.junitJupiterVersion = '5.0.0-M3'
+
 buildscript {
     repositories {
         jcenter()
@@ -32,6 +34,9 @@ dependencies {
     compile group: 'org.glassfish.jersey.ext.rx', name: 'jersey-rx-client-java8', version: '2.25.1'
     compile group: 'org.glassfish.jersey.media', name: 'jersey-media-json-processing', version: '2.25.1'
     compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.1'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: junitJupiterVersion
+    testCompile group: 'org.mockito', name: 'mockito-core', version: '1.10.19'
+    testRuntime group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junitJupiterVersion
 }
 
 task wrapper(type: Wrapper) {

@@ -9,7 +9,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class TextCommands {
     private static Map<Locale, Map<String, String>> messages = ImmutableMap.of(
-            Locale.forLanguageTag("pl_PL"), ImmutableMap.<String, String>builder()
+            new Locale("pl"), ImmutableMap.<String, String>builder()
                     .put("cmd.refresh", "\uD83D\uDD01 Podaj aktualne wartości")
                     .put("cmd.set_station", "\uD83D\uDD00 Zmień stację")
                     .put("msg.hello", "Siema. Najpierw proponuję ustawić swoją lokalizację.")

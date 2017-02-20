@@ -9,7 +9,7 @@ import java.util.Locale;
 public class ChatState {
     private Station station;
     private UseCase useCase = UseCase.NONE;
-    private Locale language = Locale.forLanguageTag("pl_PL");
+    private Locale language = new Locale("pl");
 
     public Station getStation() {
         return station;
