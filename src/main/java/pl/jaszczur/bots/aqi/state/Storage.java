@@ -53,10 +53,7 @@ public class Storage {
                 UseCase useCase = UseCase.valueOf(jsonChatState.getString("useCase"));
                 String lang = jsonChatState.getString("language");
 
-                JsonObject jsonStation = jsonChatState.getJsonObject("station");
-                long stationId = jsonStation.getJsonNumber("id").longValue();
-                String stationName = jsonStation.getString("name");
-                Station station = new Station(stationId, stationName);
+                Station station = parseStation(jsonChatState.getJsonObject("station"));
 
                 ChatState chatState = new ChatState();
                 chatState.setStation(station);
@@ -73,20 +70,26 @@ public class Storage {
         return result;
     }
 
+    private Station parseStation(JsonObject jsonStation) {
+        if (jsonStation == null) {
+            return null;
+        } else {
+            long stationId = jsonStation.getJsonNumber("id").longValue();
+            String stationName = jsonStation.getString("name");
+            return new Station(stationId, stationName);
+        }
+    }
+
     private void saveToFile(ChatStates chatStates) {
         JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
 
         for (Map.Entry<Long, ChatState> chatStateEntry : chatStates.getAll().entrySet()) {
-            // TODO: handle nulls
-            JsonObject jsonStation = Json.createObjectBuilder()
-                    .add("id", chatStateEntry.getValue().getStation().getId())
-                    .add("name", chatStateEntry.getValue().getStation().getId())
-                    .build();
-
+            ChatState chatState = chatStateEntry.getValue();
+            JsonObject jsonStation = serializeStation(chatState.getStation());
             JsonObject jsonChatState = Json.createObjectBuilder()
                     .add("chatId", chatStateEntry.getKey())
-                    .add("useCase", chatStateEntry.getValue().getUseCase().name())
-                    .add("language", chatStateEntry.getValue().getLocale().getLanguage())
+                    .add("useCase", chatState.getUseCase().name())
+                    .add("language", chatState.getLocale().getLanguage())
                     .add("station", jsonStation)
                     .build();
 
@@ -100,5 +103,14 @@ public class Storage {
         } catch (IOException e) {
             logger.warn("Error while storing chat states to file {}.", file, e);
         }
+    }
+
+    private JsonObject serializeStation(Station station) {
+        return station == null
+                ? null
+                : Json.createObjectBuilder()
+                .add("id", station.getId())
+                .add("name", station.getId())
+                .build();
     }
 }
