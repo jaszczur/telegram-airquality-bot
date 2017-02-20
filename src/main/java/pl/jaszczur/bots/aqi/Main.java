@@ -14,44 +14,50 @@ import pl.jaszczur.bots.aqi.commands.GetAirQualityCommand;
 import pl.jaszczur.bots.aqi.commands.SetLocationCommand;
 import pl.jaszczur.bots.aqi.commands.StartCommand;
 import pl.jaszczur.bots.aqi.state.ChatStates;
+import pl.jaszczur.bots.aqi.state.Storage;
+
+import java.io.File;
 
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
     private final TelegramBot bot;
-    private final BotHandler botHandler;
-    private ChatStates chatStates = new ChatStates();
+    private final Storage storage;
 
-    public Main(TelegramBot bot) {
+    public Main(TelegramBot bot, Storage storage) {
         this.bot = bot;
-        this.botHandler = new BotHandler(chatStates);
+        this.storage = storage;
     }
 
     public void start() {
         AirQualityApi airQualityApi = new AirQualityApi();
 
-        StartCommand startCommand = new StartCommand(chatStates);
-        SetLocationCommand setLocationCommand = new SetLocationCommand(chatStates, airQualityApi);
-        GetAirQualityCommand getAirQualityCommand = new GetAirQualityCommand(airQualityApi, new AirQualityIndexProvider(), chatStates);
+        storage.load().subscribe(chatStates -> {
+            final BotHandler botHandler = new BotHandler(chatStates);
 
-        botHandler
-                .addCommand(startCommand)
-                .addCommand(setLocationCommand)
-                .addCommand(getAirQualityCommand);
+            StartCommand startCommand = new StartCommand(chatStates);
+            SetLocationCommand setLocationCommand = new SetLocationCommand(chatStates, airQualityApi);
+            GetAirQualityCommand getAirQualityCommand = new GetAirQualityCommand(airQualityApi, new AirQualityIndexProvider(), chatStates);
 
-        bot.setUpdatesListener(updates -> {
-            Flowable.fromIterable(updates)
-                    .map(Update::message)
-                    .flatMap(message -> botHandler.handle(message).toFlowable())
-                    .map(bot::execute)
-                    .subscribe(
-                            msg -> {
-                                if (msg.isOk())
-                                    logger.debug("Reply sent");
-                                else
-                                    logger.warn("Error occurred {}: {}", msg.errorCode(), msg.description());
-                            },
-                            err -> logger.error("What a Terrible Failure", err));
-            return UpdatesListener.CONFIRMED_UPDATES_ALL;
+            botHandler
+                    .addCommand(startCommand)
+                    .addCommand(setLocationCommand)
+                    .addCommand(getAirQualityCommand);
+
+            bot.setUpdatesListener(updates -> {
+                Flowable.fromIterable(updates)
+                        .map(Update::message)
+                        .flatMap(message -> botHandler.handle(message).toFlowable())
+                        .map(bot::execute)
+                        .subscribe(
+                                msg -> {
+                                    if (msg.isOk())
+                                        logger.debug("Reply sent");
+                                    else
+                                        logger.warn("Error occurred {}: {}", msg.errorCode(), msg.description());
+                                },
+                                err -> logger.error("What a Terrible Failure", err));
+                return UpdatesListener.CONFIRMED_UPDATES_ALL;
+            });
         });
     }
 
@@ -62,7 +68,7 @@ public class Main {
             logger.error("Specify TELEGRAM_BOT_KEY by defining env variable or providing an argument");
             System.exit(-1);
         } else {
-            new Main(TelegramBotAdapter.build(botApiKey)).start();
+            new Main(TelegramBotAdapter.build(botApiKey), new Storage(new File("./tg-state.json"))).start();
         }
     }
 
