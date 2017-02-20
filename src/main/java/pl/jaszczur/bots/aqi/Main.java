@@ -13,13 +13,13 @@ import pl.jaszczur.bots.aqi.aqlogic.AirQualityIndexProvider;
 import pl.jaszczur.bots.aqi.commands.GetAirQualityCommand;
 import pl.jaszczur.bots.aqi.commands.SetLocationCommand;
 import pl.jaszczur.bots.aqi.commands.StartCommand;
-import pl.jaszczur.bots.aqi.state.ChatStates;
 import pl.jaszczur.bots.aqi.state.Storage;
 
 import java.io.File;
 
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
+    private static final String STATE_STORAGE_FILE_PATH = "./chat.state";
     private final TelegramBot bot;
     private final Storage storage;
 
@@ -68,7 +68,7 @@ public class Main {
             logger.error("Specify TELEGRAM_BOT_KEY by defining env variable or providing an argument");
             System.exit(-1);
         } else {
-            new Main(TelegramBotAdapter.build(botApiKey), new Storage(new File("./tg-state.json"))).start();
+            new Main(TelegramBotAdapter.build(botApiKey), new Storage(new File(STATE_STORAGE_FILE_PATH))).start();
         }
     }
 
