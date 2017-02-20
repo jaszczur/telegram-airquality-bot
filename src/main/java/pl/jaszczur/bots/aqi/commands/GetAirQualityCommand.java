@@ -18,6 +18,7 @@ import pl.jaszczur.bots.aqi.state.ChatState;
 import pl.jaszczur.bots.aqi.state.ChatStates;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -68,18 +69,23 @@ public class GetAirQualityCommand implements Command {
     }
 
     private String formatMessage(Locale locale, AirQualityResult airQualityResult) {
-        StringBuilder result = new StringBuilder(airQualityResult.getStation().getName());
+        StringBuilder result = new StringBuilder();
+        result.append("Aktualne poziomy dla stacji *").append(airQualityResult.getStation().getName()).append("*:\n");
         result.append("\n");
-        for (PartType partType : Ordering.usingToString().sortedCopy(airQualityResult.getAvailableParticleTypes())) {
-            double value = airQualityResult.getValue(partType).get();
+        for (PartType partType : sortedParticles(airQualityResult)) {
+            double value = airQualityResult.getValue(partType);
             result.append(" - ")
                     .append(partType.getUiName())
-                    .append(": *")
+                    .append(": ")
                     .append(String.format(locale, "%.1f", value))
-                    .append(" µg/m³* ")
+                    .append(" µg/m³ *")
                     .append(TextCommands.getText(locale, aqiProvider.get(partType, value).getUiIndicator()))
-                    .append("\n");
+                    .append("*\n");
         }
         return result.toString();
+    }
+
+    private List<PartType> sortedParticles(AirQualityResult airQualityResult) {
+        return Ordering.usingToString().sortedCopy(airQualityResult.getAvailableParticleTypes());
     }
 }

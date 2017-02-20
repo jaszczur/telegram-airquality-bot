@@ -21,8 +21,8 @@ public class AirQualityResult {
         return values.keySet();
     }
 
-    public Optional<Double> getValue(PartType partType) {
-        return Optional.ofNullable(values.get(partType));
+    public Double getValue(PartType partType) {
+        return values.get(partType);
     }
 
     @Override
