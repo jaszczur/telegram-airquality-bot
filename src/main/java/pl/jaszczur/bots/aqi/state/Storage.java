@@ -47,6 +47,7 @@ public class Storage {
             ImmutableMap.Builder<Long, ChatState> statesBuilder = ImmutableMap.builder();
 
             for (JsonValue jsonChatStateValue : jsonChatStates) {
+                // TODO: handle nulls
                 JsonObject jsonChatState = (JsonObject) jsonChatStateValue;
                 long chatId = jsonChatState.getJsonNumber("chatId").longValue();
                 UseCase useCase = UseCase.valueOf(jsonChatState.getString("useCase"));
@@ -76,6 +77,7 @@ public class Storage {
         JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
 
         for (Map.Entry<Long, ChatState> chatStateEntry : chatStates.getAll().entrySet()) {
+            // TODO: handle nulls
             JsonObject jsonStation = Json.createObjectBuilder()
                     .add("id", chatStateEntry.getValue().getStation().getId())
                     .add("name", chatStateEntry.getValue().getStation().getId())
