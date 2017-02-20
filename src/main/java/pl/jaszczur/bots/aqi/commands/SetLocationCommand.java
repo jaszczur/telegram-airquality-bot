@@ -2,6 +2,7 @@ package pl.jaszczur.bots.aqi.commands;
 
 import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Message;
+import com.pengrad.telegrambot.model.request.ParseMode;
 import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.BaseResponse;
@@ -75,15 +76,21 @@ public class SetLocationCommand implements Command {
             return Single.just(new SendMessage(chat.id(), "Podaj co najmniej 3 znaki nazwy stacji"));
         } else {
             return aqApi.getStations(text)
-                    .map(stations -> new SendMessage(chat.id(), listStations(stations)))
+                    .map(stations -> new SendMessage(chat.id(), listStations(stations)).parseMode(ParseMode.Markdown))
                     .onErrorReturn(err -> new SendMessage(chat.id(), "Nie znaleziono takiej stacji"));
         }
     }
 
     private String listStations(Set<Station> stations) {
         StringBuilder result = new StringBuilder();
+        result.append("Znaleziono następujące stacje:\n");
         for (Station station : stations) {
-            result.append(station.getId()).append(". ").append(station.getName()).append("\n");
+            result
+                    .append("*")
+                    .append(station.getId())
+                    .append(".* ")
+                    .append(station.getName())
+                    .append("\n");
         }
         result.append("Podaj numer stacji");
         return result.toString();
