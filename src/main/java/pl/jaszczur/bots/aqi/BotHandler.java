@@ -8,6 +8,7 @@ import io.reactivex.Single;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.jaszczur.bots.aqi.commands.Command;
+import pl.jaszczur.bots.aqi.state.ChatStates;
 
 import java.util.List;
 import java.util.Optional;

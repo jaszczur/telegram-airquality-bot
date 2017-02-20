@@ -1,18 +1,16 @@
-package pl.jaszczur.bots.aqi;
+package pl.jaszczur.bots.aqi.state;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.Maps;
 import com.pengrad.telegrambot.model.Chat;
 
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 public class ChatStates {
     private Cache<Long, ChatState> states = CacheBuilder.newBuilder()
             .expireAfterAccess(14, TimeUnit.DAYS)
-            .maximumSize(10 * 1024 * 1024)
+            .maximumSize(10 * 1024 * 1024L)
             .build();
 
     public ChatState getState(Chat chat) {

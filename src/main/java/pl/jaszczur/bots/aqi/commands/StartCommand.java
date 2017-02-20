@@ -5,8 +5,8 @@ import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.BaseResponse;
 import io.reactivex.Single;
-import pl.jaszczur.bots.aqi.ChatState;
-import pl.jaszczur.bots.aqi.ChatStates;
+import pl.jaszczur.bots.aqi.state.ChatState;
+import pl.jaszczur.bots.aqi.state.ChatStates;
 import pl.jaszczur.bots.aqi.TextCommands;
 import pl.jaszczur.bots.aqi.UseCase;
 

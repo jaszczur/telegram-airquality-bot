@@ -10,6 +10,8 @@ import io.reactivex.SingleSource;
 import pl.jaszczur.bots.aqi.*;
 import pl.jaszczur.bots.aqi.aqlogic.AirQualityApi;
 import pl.jaszczur.bots.aqi.aqlogic.Station;
+import pl.jaszczur.bots.aqi.state.ChatState;
+import pl.jaszczur.bots.aqi.state.ChatStates;
 
 import java.util.EnumSet;
 import java.util.Set;

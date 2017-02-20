@@ -5,7 +5,6 @@ import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.TelegramBotAdapter;
 import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Update;
-import com.pengrad.telegrambot.response.BaseResponse;
 import io.reactivex.Flowable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +13,7 @@ import pl.jaszczur.bots.aqi.aqlogic.AirQualityIndexProvider;
 import pl.jaszczur.bots.aqi.commands.GetAirQualityCommand;
 import pl.jaszczur.bots.aqi.commands.SetLocationCommand;
 import pl.jaszczur.bots.aqi.commands.StartCommand;
+import pl.jaszczur.bots.aqi.state.ChatStates;
 
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);

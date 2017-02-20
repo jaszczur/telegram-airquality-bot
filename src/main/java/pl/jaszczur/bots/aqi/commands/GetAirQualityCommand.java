@@ -12,6 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.jaszczur.bots.aqi.*;
 import pl.jaszczur.bots.aqi.aqlogic.*;
+import pl.jaszczur.bots.aqi.state.ChatState;
+import pl.jaszczur.bots.aqi.state.ChatStates;
 
 import java.util.EnumSet;
 import java.util.Locale;

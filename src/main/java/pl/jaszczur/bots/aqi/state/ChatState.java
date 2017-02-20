@@ -1,5 +1,6 @@
-package pl.jaszczur.bots.aqi;
+package pl.jaszczur.bots.aqi.state;
 
+import pl.jaszczur.bots.aqi.UseCase;
 import pl.jaszczur.bots.aqi.aqlogic.Station;
 
 import java.util.Locale;
