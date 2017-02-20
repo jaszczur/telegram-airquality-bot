@@ -69,7 +69,7 @@ class Converter {
                 ? null
                 : Json.createObjectBuilder()
                 .add("id", station.getId())
-                .add("name", station.getId())
+                .add("name", station.getName())
                 .build();
     }
 }
