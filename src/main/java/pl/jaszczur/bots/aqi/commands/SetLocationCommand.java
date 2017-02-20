@@ -88,7 +88,7 @@ public class SetLocationCommand implements Command {
             result
                     .append("*")
                     .append(station.getId())
-                    .append(".* ")
+                    .append("*. ")
                     .append(station.getName())
                     .append("\n");
         }

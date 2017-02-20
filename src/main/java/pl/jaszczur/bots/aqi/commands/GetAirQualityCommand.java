@@ -74,13 +74,13 @@ public class GetAirQualityCommand implements Command {
         result.append("\n");
         for (PartType partType : sortedParticles(airQualityResult)) {
             double value = airQualityResult.getValue(partType);
-            result.append(" - ")
+            result.append("- ")
                     .append(partType.getUiName())
-                    .append(": ")
+                    .append(": *")
                     .append(String.format(locale, "%.1f", value))
-                    .append(" µg/m³ *")
+                    .append(" µg/m³* ")
                     .append(TextCommands.getText(locale, aqiProvider.get(partType, value).getUiIndicator()))
-                    .append("*\n");
+                    .append("\n");
         }
         return result.toString();
     }
