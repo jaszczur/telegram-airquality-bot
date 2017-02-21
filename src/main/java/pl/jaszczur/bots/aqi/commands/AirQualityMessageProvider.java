@@ -44,7 +44,7 @@ public class AirQualityMessageProvider {
         return new SendMessage(chat.id(), text)
                 .parseMode(ParseMode.Markdown)
                 .replyMarkup(new InlineKeyboardMarkup(new InlineKeyboardButton[]{
-                        new InlineKeyboardButton("Odświerz").callbackData(Long.toString(chatState.getStation().getId()))
+                        new InlineKeyboardButton("Odśwież").callbackData(Long.toString(chatState.getStation().getId()))
                 }));
     }
 
