@@ -11,10 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.jaszczur.bots.aqi.aqlogic.AirQualityApi;
 import pl.jaszczur.bots.aqi.aqlogic.AirQualityIndexProvider;
-import pl.jaszczur.bots.aqi.commands.GetAirQualityCommand;
-import pl.jaszczur.bots.aqi.commands.SetLocationCommand;
-import pl.jaszczur.bots.aqi.commands.StartCommand;
-import pl.jaszczur.bots.aqi.commands.UpdateAirQualityCommand;
+import pl.jaszczur.bots.aqi.commands.*;
 import pl.jaszczur.bots.aqi.state.ChatStates;
 import pl.jaszczur.bots.aqi.state.Storage;
 
@@ -76,8 +73,9 @@ public class Main {
         AirQualityMessageProvider airQualityMessageProvider = new AirQualityMessageProvider(airQualityApi, new AirQualityIndexProvider());
         botHandler
                 .addMessageCommand(new StartCommand(chatStates))
-                .addMessageCommand(new SetLocationCommand(chatStates, airQualityApi))
-                .addMessageCommand(new GetAirQualityCommand(airQualityMessageProvider, chatStates));
+                .addMessageCommand(new GetAirQualityCommand(airQualityMessageProvider, chatStates))
+                .addMessageCommand(new SetLocationCommand(chatStates, airQualityApi, airQualityMessageProvider))
+                .addMessageCommand(new DefaultCommand());
         botHandler
                 .addCallbackCommand(new UpdateAirQualityCommand(airQualityMessageProvider, chatStates));
         return botHandler;

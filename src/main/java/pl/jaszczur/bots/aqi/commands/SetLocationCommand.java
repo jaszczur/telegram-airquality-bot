@@ -8,8 +8,8 @@ import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.BaseResponse;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
-import io.reactivex.SingleSource;
-import pl.jaszczur.bots.aqi.BotUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.jaszczur.bots.aqi.UseCase;
 import pl.jaszczur.bots.aqi.aqlogic.AirQualityApi;
 import pl.jaszczur.bots.aqi.aqlogic.Station;
@@ -19,16 +19,21 @@ import pl.jaszczur.bots.aqi.state.ChatStates;
 import java.util.EnumSet;
 import java.util.Set;
 
-import static pl.jaszczur.bots.aqi.BotUtils.*;
+import static pl.jaszczur.bots.aqi.BotUtils.textWithoutCommand;
 
 public class SetLocationCommand implements Command<Message> {
     private static final String COMMAND = "/set_station";
-    private ChatStates chatStates;
-    private AirQualityApi aqApi;
 
-    public SetLocationCommand(ChatStates chatStates, AirQualityApi api) {
+    private static final Logger logger = LoggerFactory.getLogger(SetLocationCommand.class);
+
+    private final ChatStates chatStates;
+    private final AirQualityApi aqApi;
+    private final AirQualityMessageProvider aqMessageProvider;
+
+    public SetLocationCommand(ChatStates chatStates, AirQualityApi api, AirQualityMessageProvider aqMessageProvider) {
         this.chatStates = chatStates;
         aqApi = api;
+        this.aqMessageProvider = aqMessageProvider;
     }
 
     @Override
@@ -41,10 +46,10 @@ public class SetLocationCommand implements Command<Message> {
             UseCase previousUseCase = chatState.getUseCase();
             chatState.setUseCase(UseCase.SETTING_LOCATION);
 
-            if (previousUseCase != UseCase.SETTING_LOCATION || text.isEmpty()) {
+            if (previousUseCase == UseCase.NONE || text.isEmpty()) {
                 return askForStationMessage(chat).toFlowable();
             } else {
-                return tryToSetStation(chat, chatState, text).toFlowable();
+                return tryToSetStation(chat, chatState, text);
             }
         });
     }
@@ -53,7 +58,7 @@ public class SetLocationCommand implements Command<Message> {
         return Single.just(new SendMessage(chat.id(), "Podaj nazwę lub numer stacji"));
     }
 
-    private Single<? extends SendMessage> tryToSetStation(Chat chat, ChatState chatState, String text) {
+    private Flowable<? extends SendMessage> tryToSetStation(Chat chat, ChatState chatState, String text) {
         try {
             return setStationById(chat, chatState, text);
         } catch (NumberFormatException ex) {
@@ -61,22 +66,30 @@ public class SetLocationCommand implements Command<Message> {
         }
     }
 
-    private Single<? extends SendMessage> setStationById(Chat chat, ChatState chatState, String text) {
+    private Flowable<? extends SendMessage> setStationById(Chat chat, ChatState chatState, String text) {
         long stationId = Long.parseLong(text);
         return aqApi.getStation(stationId)
-                .map(station -> {
+                .toFlowable()
+                .flatMap(station -> {
                     chatState.setStation(station);
                     chatState.setUseCase(UseCase.GETTING_UPDATES);
-                    return new SendMessage(chat.id(), "Ustawiono stację " + station.getName()).replyMarkup(BotUtils.getDefaultKeyboard(chatState.getLocale()));
+                    SendMessage confirmation = new SendMessage(chat.id(), "Ustawiono stację " + station.getName());
+
+                    return Flowable.just(confirmation)
+                            .mergeWith(aqMessageProvider.getMessage(chat, chatState));
                 })
-                .onErrorReturn(err -> new SendMessage(chat.id(), "Nie znaleziono takiej stacji"));
+                .onErrorReturn(err -> {
+                    logger.warn("Lipa", err);
+                    return new SendMessage(chat.id(), "Nie znaleziono takiej stacji");
+                });
     }
 
-    private Single<? extends SendMessage> findStationByName(Chat chat, String text) {
+    private Flowable<? extends SendMessage> findStationByName(Chat chat, String text) {
         if (text.length() < 3) {
-            return Single.just(new SendMessage(chat.id(), "Podaj co najmniej 3 znaki nazwy stacji"));
+            return Flowable.just(new SendMessage(chat.id(), "Podaj co najmniej 3 znaki nazwy stacji"));
         } else {
             return aqApi.getStations(text)
+                    .toFlowable()
                     .map(stations -> new SendMessage(chat.id(), listStations(stations)).parseMode(ParseMode.Markdown))
                     .onErrorReturn(err -> new SendMessage(chat.id(), "Nie znaleziono takiej stacji"));
         }
@@ -99,11 +112,7 @@ public class SetLocationCommand implements Command<Message> {
 
     @Override
     public boolean canHandle(Message msg) {
-        ChatState chatState = chatStates.getState(msg.chat());
-        UseCase useCase = chatState.getUseCase();
-        return useCase == UseCase.SETTING_LOCATION
-                || isCommand(msg, COMMAND)
-                || isTextCommand(chatState.getLocale(), msg, "cmd.set_station");
+        return !GetAirQualityCommand.canHandle(chatStates, msg);
     }
 
     @Override

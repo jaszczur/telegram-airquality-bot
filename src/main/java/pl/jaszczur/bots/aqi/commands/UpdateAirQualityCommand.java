@@ -10,7 +10,6 @@ import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.request.EditMessageText;
 import com.pengrad.telegrambot.response.BaseResponse;
 import io.reactivex.Flowable;
-import pl.jaszczur.bots.aqi.AirQualityMessageProvider;
 import pl.jaszczur.bots.aqi.state.ChatStates;
 
 public class UpdateAirQualityCommand implements Command<CallbackQuery> {
