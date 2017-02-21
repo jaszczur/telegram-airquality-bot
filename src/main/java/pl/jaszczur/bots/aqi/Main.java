@@ -6,6 +6,7 @@ import com.pengrad.telegrambot.TelegramBotAdapter;
 import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Update;
 import io.reactivex.Flowable;
+import io.reactivex.flowables.ConnectableFlowable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.jaszczur.bots.aqi.aqlogic.AirQualityApi;
@@ -13,6 +14,7 @@ import pl.jaszczur.bots.aqi.aqlogic.AirQualityIndexProvider;
 import pl.jaszczur.bots.aqi.commands.GetAirQualityCommand;
 import pl.jaszczur.bots.aqi.commands.SetLocationCommand;
 import pl.jaszczur.bots.aqi.commands.StartCommand;
+import pl.jaszczur.bots.aqi.commands.UpdateAirQualityCommand;
 import pl.jaszczur.bots.aqi.state.ChatStates;
 import pl.jaszczur.bots.aqi.state.Storage;
 
@@ -40,7 +42,10 @@ public class Main {
     }
 
     private int processUpdates(BotHandler botHandler, List<Update> updates) {
-        Flowable.fromIterable(updates)
+        ConnectableFlowable<Update> updatesFlow = Flowable.fromIterable(updates).publish();
+
+        updatesFlow
+                .filter(u -> u.message() != null)
                 .map(Update::message)
                 .flatMap(message -> botHandler.handle(message).toFlowable())
                 .map(bot::execute)
@@ -52,6 +57,15 @@ public class Main {
                                 logger.warn("Error occurred {}: {}", msg.errorCode(), msg.description());
                         },
                         err -> logger.error("What a Terrible Failure", err));
+        updatesFlow
+                .filter(u -> u.callbackQuery() != null)
+                .map(Update::callbackQuery)
+                .flatMap(cq -> botHandler.handle(cq).toFlowable())
+                .map(bot::execute)
+                .subscribe(); // TODO handle errors and log
+
+        updatesFlow.connect();
+
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
 
     }
@@ -59,10 +73,13 @@ public class Main {
     private BotHandler createBotHandler(ChatStates chatStates) {
         final AirQualityApi airQualityApi = new AirQualityApi();
         final BotHandler botHandler = new BotHandler(chatStates);
+        AirQualityMessageProvider airQualityMessageProvider = new AirQualityMessageProvider(airQualityApi, new AirQualityIndexProvider());
         botHandler
-                .addCommand(new StartCommand(chatStates))
-                .addCommand(new SetLocationCommand(chatStates, airQualityApi))
-                .addCommand(new GetAirQualityCommand(airQualityApi, new AirQualityIndexProvider(), chatStates));
+                .addMessageCommand(new StartCommand(chatStates))
+                .addMessageCommand(new SetLocationCommand(chatStates, airQualityApi))
+                .addMessageCommand(new GetAirQualityCommand(airQualityMessageProvider, chatStates));
+        botHandler
+                .addCallbackCommand(new UpdateAirQualityCommand(airQualityMessageProvider, chatStates));
         return botHandler;
     }
 

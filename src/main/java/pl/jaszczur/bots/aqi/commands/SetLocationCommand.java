@@ -20,7 +20,7 @@ import java.util.Set;
 
 import static pl.jaszczur.bots.aqi.BotUtils.*;
 
-public class SetLocationCommand implements Command {
+public class SetLocationCommand implements Command<Message> {
     private static final String COMMAND = "/set_station";
     private ChatStates chatStates;
     private AirQualityApi aqApi;

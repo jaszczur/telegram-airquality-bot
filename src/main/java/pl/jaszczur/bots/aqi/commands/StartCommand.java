@@ -13,7 +13,7 @@ import pl.jaszczur.bots.aqi.state.ChatStates;
 import java.util.EnumSet;
 import java.util.Set;
 
-public class StartCommand implements Command {
+public class StartCommand implements Command<Message> {
     private final ChatStates states;
 
     public StartCommand(ChatStates states) {
