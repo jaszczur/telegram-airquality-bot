@@ -8,7 +8,7 @@ import com.pengrad.telegrambot.model.request.ParseMode;
 import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.request.EditMessageText;
 import com.pengrad.telegrambot.response.BaseResponse;
-import io.reactivex.Single;
+import io.reactivex.Flowable;
 import pl.jaszczur.bots.aqi.AirQualityMessageProvider;
 import pl.jaszczur.bots.aqi.state.ChatStates;
 
@@ -22,8 +22,8 @@ public class UpdateAirQualityCommand implements Command<CallbackQuery> {
     }
 
     @Override
-    public Single<? extends BaseRequest<?, ? extends BaseResponse>> handle(CallbackQuery cq) {
-        return Single.defer(() -> {
+    public Flowable<? extends BaseRequest<?, ? extends BaseResponse>> handle(CallbackQuery cq) {
+        return Flowable.defer(() -> {
             long stationId = Long.parseLong(cq.data());
             Message attachedMessage = cq.message();
             return airQualityMessageProvider.getMessage(chatStates.getState(attachedMessage.chat()).getLocale(), stationId)
@@ -31,7 +31,7 @@ public class UpdateAirQualityCommand implements Command<CallbackQuery> {
                             .parseMode(ParseMode.Markdown)
                             .replyMarkup(new InlineKeyboardMarkup(new InlineKeyboardButton[]{
                                     new InlineKeyboardButton("Odświerz").callbackData(Long.toString(stationId))
-                            })));
+                            }))).toFlowable();
         });
     }
 

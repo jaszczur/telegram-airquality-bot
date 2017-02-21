@@ -47,7 +47,7 @@ public class Main {
         updatesFlow
                 .filter(u -> u.message() != null)
                 .map(Update::message)
-                .flatMap(message -> botHandler.handle(message).toFlowable())
+                .flatMap(botHandler::handle)
                 .map(bot::execute)
                 .subscribe(
                         msg -> {
@@ -60,7 +60,7 @@ public class Main {
         updatesFlow
                 .filter(u -> u.callbackQuery() != null)
                 .map(Update::callbackQuery)
-                .flatMap(cq -> botHandler.handle(cq).toFlowable())
+                .flatMap(botHandler::handle)
                 .map(bot::execute)
                 .subscribe(); // TODO handle errors and log
 

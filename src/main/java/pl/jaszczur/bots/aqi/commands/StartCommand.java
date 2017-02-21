@@ -4,6 +4,7 @@ import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.BaseResponse;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import pl.jaszczur.bots.aqi.TextCommands;
 import pl.jaszczur.bots.aqi.UseCase;
@@ -21,11 +22,11 @@ public class StartCommand implements Command<Message> {
     }
 
     @Override
-    public Single<? extends BaseRequest<?, ? extends BaseResponse>> handle(Message msg) {
+    public Flowable<? extends BaseRequest<?, ? extends BaseResponse>> handle(Message msg) {
         ChatState chatState = states.getState(msg.chat());
         chatState.setUseCase(UseCase.SETTING_LOCATION);
         SendMessage reply = new SendMessage(msg.chat().id(), TextCommands.getText(chatState.getLocale(), "msg.hello"));
-        return Single.just(reply);
+        return Flowable.just(reply);
     }
 
     @Override

@@ -9,6 +9,7 @@ import com.pengrad.telegrambot.model.request.ReplyKeyboardRemove;
 import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.request.EditMessageText;
 import com.pengrad.telegrambot.response.BaseResponse;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,21 +39,21 @@ public class BotHandler {
         return this;
     }
 
-    public Single<BaseRequest<?, ? extends BaseResponse>> handle(Message msg) {
-        return Single.defer(() -> {
+    public Flowable<BaseRequest<?, ? extends BaseResponse>> handle(Message msg) {
+        return Flowable.defer(() -> {
             logger.debug("{}: Handling message \"{}\"", msg.chat().id(), msg.text());
             UseCase useCase = chatStates.getState(msg.chat()).getUseCase();
             Optional<Command<Message>> command = messageCommands.stream()
                     .filter(cmd -> cmd.availableUseCases().contains(useCase))
                     .filter(cmd -> cmd.canHandle(msg))
                     .findFirst();
-            return command.map(Single::just).orElse(Single.never())
+            return command.map(Flowable::just).orElse(Flowable.never())
                     .flatMap(c -> c.handle(msg));
         });
     }
 
-    public Single<BaseRequest<?, ? extends BaseResponse>> handle(CallbackQuery cq) {
-        return Single.defer(() -> {
+    public Flowable<BaseRequest<?, ? extends BaseResponse>> handle(CallbackQuery cq) {
+        return Flowable.defer(() -> {
             Chat chat = cq.message().chat();
             logger.debug("{}: Handling callback \"{}\"", chat.id(), cq.data());
             UseCase useCase = chatStates.getState(chat).getUseCase();
@@ -60,7 +61,7 @@ public class BotHandler {
                     .filter(cmd -> cmd.availableUseCases().contains(useCase))
                     .filter(cmd -> cmd.canHandle(cq))
                     .findFirst();
-            return command.map(Single::just).orElse(Single.never())
+            return command.map(Flowable::just).orElse(Flowable.never())
                     .flatMap(c -> c.handle(cq));
         });
     }

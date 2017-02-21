@@ -6,6 +6,7 @@ import com.pengrad.telegrambot.model.request.ParseMode;
 import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.BaseResponse;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.SingleSource;
 import pl.jaszczur.bots.aqi.BotUtils;
@@ -31,8 +32,8 @@ public class SetLocationCommand implements Command<Message> {
     }
 
     @Override
-    public Single<? extends BaseRequest<?, ? extends BaseResponse>> handle(Message message) {
-        return Single.defer(() -> {
+    public Flowable<? extends BaseRequest<?, ? extends BaseResponse>> handle(Message message) {
+        return Flowable.defer(() -> {
             Chat chat = message.chat();
             String text = textWithoutCommand(message).get();
             ChatState chatState = chatStates.getState(chat);
@@ -41,9 +42,9 @@ public class SetLocationCommand implements Command<Message> {
             chatState.setUseCase(UseCase.SETTING_LOCATION);
 
             if (previousUseCase != UseCase.SETTING_LOCATION || text.isEmpty()) {
-                return askForStationMessage(chat);
+                return askForStationMessage(chat).toFlowable();
             } else {
-                return tryToSetStation(chat, chatState, text);
+                return tryToSetStation(chat, chatState, text).toFlowable();
             }
         });
     }
@@ -52,7 +53,7 @@ public class SetLocationCommand implements Command<Message> {
         return Single.just(new SendMessage(chat.id(), "Podaj nazwę lub numer stacji"));
     }
 
-    private SingleSource<? extends SendMessage> tryToSetStation(Chat chat, ChatState chatState, String text) {
+    private Single<? extends SendMessage> tryToSetStation(Chat chat, ChatState chatState, String text) {
         try {
             return setStationById(chat, chatState, text);
         } catch (NumberFormatException ex) {
@@ -60,7 +61,7 @@ public class SetLocationCommand implements Command<Message> {
         }
     }
 
-    private SingleSource<? extends SendMessage> setStationById(Chat chat, ChatState chatState, String text) {
+    private Single<? extends SendMessage> setStationById(Chat chat, ChatState chatState, String text) {
         long stationId = Long.parseLong(text);
         return aqApi.getStation(stationId)
                 .map(station -> {
@@ -71,7 +72,7 @@ public class SetLocationCommand implements Command<Message> {
                 .onErrorReturn(err -> new SendMessage(chat.id(), "Nie znaleziono takiej stacji"));
     }
 
-    private SingleSource<? extends SendMessage> findStationByName(Chat chat, String text) {
+    private Single<? extends SendMessage> findStationByName(Chat chat, String text) {
         if (text.length() < 3) {
             return Single.just(new SendMessage(chat.id(), "Podaj co najmniej 3 znaki nazwy stacji"));
         } else {

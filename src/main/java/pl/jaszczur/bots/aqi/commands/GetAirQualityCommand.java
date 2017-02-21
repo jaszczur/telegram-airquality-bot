@@ -8,6 +8,7 @@ import com.pengrad.telegrambot.model.request.ParseMode;
 import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.BaseResponse;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,19 +33,19 @@ public class GetAirQualityCommand implements Command<Message> {
     }
 
     @Override
-    public Single<? extends BaseRequest<?, ? extends BaseResponse>> handle(Message message) {
+    public Flowable<? extends BaseRequest<?, ? extends BaseResponse>> handle(Message message) {
         Chat chat = message.chat();
         ChatState chatState = chatStates.getState(chat);
         Station station = chatState.getStation();
         if (station == null) {
-            return Single.just(createFailureMessage(chat, chatState, "Nie ustawiłeś/aś jeszcze stacji"));
+            return Flowable.just(createFailureMessage(chat, chatState, "Nie ustawiłeś/aś jeszcze stacji"));
         } else {
             return aqMessageProvider.getMessage(chatState.getLocale(), station.getId())
                     .map(msg -> createSuccessMessage(chat, chatState, msg))
                     .onErrorReturn(err -> {
                         logger.warn("Error while sending aq message", err);
                         return createFailureMessage(chat, chatState, "Coś nie bangla. Chyba podana stacja nie istnieje \uD83D\uDE14");
-                    });
+                    }).toFlowable();
         }
 
     }
