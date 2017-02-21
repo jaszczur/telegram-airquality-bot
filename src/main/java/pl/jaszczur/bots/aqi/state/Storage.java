@@ -24,9 +24,9 @@ public class Storage {
 
     public Single<ChatStates> load() {
         return Single.defer(() -> {
-            ChatStates chatStates = loadFromFile();
-            savePeriodically(chatStates);
-            return Single.just(chatStates);
+//            ChatStates chatStates = loadFromFile();
+//            savePeriodically(chatStates);
+            return Single.just(ChatStates.create());
         });
     }
 
