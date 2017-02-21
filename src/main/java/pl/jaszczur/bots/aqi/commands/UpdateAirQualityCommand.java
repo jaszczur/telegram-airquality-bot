@@ -33,7 +33,7 @@ public class UpdateAirQualityCommand implements Command<CallbackQuery> {
                         EditMessageText editMessage = new EditMessageText(attachedMessage.chat().id(), attachedMessage.messageId(), text)
                                 .parseMode(ParseMode.Markdown)
                                 .replyMarkup(new InlineKeyboardMarkup(new InlineKeyboardButton[]{
-                                        new InlineKeyboardButton("Odświerz").callbackData(Long.toString(stationId))
+                                        new InlineKeyboardButton("Odśwież").callbackData(Long.toString(stationId))
                                 }));
                         AnswerCallbackQuery answerCallbackQuery = new AnswerCallbackQuery(cq.id()).text("Pobrano aktualne dane");
                         return Flowable.just(editMessage, answerCallbackQuery);
