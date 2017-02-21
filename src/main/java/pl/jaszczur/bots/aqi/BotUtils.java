@@ -42,7 +42,8 @@ public final class BotUtils {
     public static Keyboard getDefaultKeyboard(Locale locale) {
         return new ReplyKeyboardMarkup(
                 new String[] {TextCommands.getText(locale, "cmd.refresh")},
-                new String[] {TextCommands.getText(locale, "cmd.set_station")});
+                new String[] {TextCommands.getText(locale, "cmd.set_station")})
+                .oneTimeKeyboard(true);
     }
 
 }

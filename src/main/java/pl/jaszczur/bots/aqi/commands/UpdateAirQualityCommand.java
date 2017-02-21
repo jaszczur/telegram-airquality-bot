@@ -5,6 +5,7 @@ import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.request.InlineKeyboardButton;
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import com.pengrad.telegrambot.model.request.ParseMode;
+import com.pengrad.telegrambot.request.AnswerCallbackQuery;
 import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.request.EditMessageText;
 import com.pengrad.telegrambot.response.BaseResponse;
@@ -27,11 +28,17 @@ public class UpdateAirQualityCommand implements Command<CallbackQuery> {
             long stationId = Long.parseLong(cq.data());
             Message attachedMessage = cq.message();
             return airQualityMessageProvider.getMessage(chatStates.getState(attachedMessage.chat()).getLocale(), stationId)
-                    .map(text -> new EditMessageText(attachedMessage.chat().id(), attachedMessage.messageId(), text)
-                            .parseMode(ParseMode.Markdown)
-                            .replyMarkup(new InlineKeyboardMarkup(new InlineKeyboardButton[]{
-                                    new InlineKeyboardButton("Odświerz").callbackData(Long.toString(stationId))
-                            }))).toFlowable();
+                    .toFlowable()
+                    .flatMap(text -> {
+
+                        EditMessageText editMessage = new EditMessageText(attachedMessage.chat().id(), attachedMessage.messageId(), text)
+                                .parseMode(ParseMode.Markdown)
+                                .replyMarkup(new InlineKeyboardMarkup(new InlineKeyboardButton[]{
+                                        new InlineKeyboardButton("Odświerz").callbackData(Long.toString(stationId))
+                                }));
+                        AnswerCallbackQuery answerCallbackQuery = new AnswerCallbackQuery(cq.id()).text("Pobrano aktualne dane");
+                        return Flowable.just(editMessage, answerCallbackQuery);
+                    });
         });
     }
 
