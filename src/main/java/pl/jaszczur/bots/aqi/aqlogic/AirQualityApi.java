@@ -39,9 +39,7 @@ public class AirQualityApi {
 
     public Single<Set<Station>> getStations() {
         return stations.get()
-                .doOnError(err -> {
-            logger.warn("error while getting list of stations", err);
-        });
+                .doOnError(err -> logger.warn("error while getting list of stations", err));
     }
 
     public Single<Set<Station>> getStations(String name) {
