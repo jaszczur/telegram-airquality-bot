@@ -39,10 +39,7 @@ public class AirQualityMessageProvider {
     public Flowable<SendMessage> getMessage(Chat chat, ChatState chatState) {
         return getMessage(chatState.getLocale(), chatState.getStation().getId())
                 .map(msg -> createSuccessMessage(chat, chatState, msg))
-                .onErrorReturn(err -> {
-                    logger.warn("error", err);
-                    return createSuccessMessage(chat, chatState, TextCommands.getText(chatState.getLocale(), "msg.server_error"));
-                })
+                .onErrorReturn(err -> createSuccessMessage(chat, chatState, TextCommands.getText(chatState.getLocale(), "msg.server_error")))
                 .toFlowable();
 
     }

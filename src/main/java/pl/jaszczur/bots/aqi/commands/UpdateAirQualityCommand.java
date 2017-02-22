@@ -43,10 +43,7 @@ public class UpdateAirQualityCommand implements Command<CallbackQuery> {
                         AnswerCallbackQuery answerCallbackQuery = new AnswerCallbackQuery(cq.id()).text("Pobrano aktualne dane");
                         return Flowable.just(editMessage, answerCallbackQuery);
                     })
-                    .onErrorReturn((err) -> {
-                        logger.warn("error", err);
-                        return new AnswerCallbackQuery(cq.id()).text(TextCommands.getText(chatState.getLocale(), "msg.server_error"));
-                    });
+                    .onErrorReturn(err -> new AnswerCallbackQuery(cq.id()).text(TextCommands.getText(chatState.getLocale(), "msg.server_error")));
         });
     }
 

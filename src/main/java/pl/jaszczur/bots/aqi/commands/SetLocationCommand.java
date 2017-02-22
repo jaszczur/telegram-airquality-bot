@@ -89,10 +89,7 @@ public class SetLocationCommand implements Command<Message> {
                         } else
                             return Flowable.just(new SendMessage(chat.id(), listStations(stations)).parseMode(ParseMode.Markdown));
                     })
-                    .onErrorReturn(err -> {
-                        logger.warn("error while getting list of stations", err);
-                        return new SendMessage(chat.id(), TextCommands.getText(chatState.getLocale(), "msg.server_error"));
-                    });
+                    .onErrorReturn(err -> new SendMessage(chat.id(), TextCommands.getText(chatState.getLocale(), "msg.server_error")));
         }
     }
 

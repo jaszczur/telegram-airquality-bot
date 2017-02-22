@@ -5,9 +5,13 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
 import io.reactivex.Single;
+import io.reactivex.schedulers.Schedulers;
 import org.glassfish.jersey.client.rx.RxClient;
 import org.glassfish.jersey.client.rx.java8.RxCompletionStage;
 import org.glassfish.jersey.client.rx.java8.RxCompletionStageInvoker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import pl.jaszczur.bots.aqi.commands.SetLocationCommand;
 
 import javax.json.JsonArray;
 import javax.json.JsonNumber;
@@ -23,21 +27,23 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class AirQualityApi {
+    private static final Logger logger = LoggerFactory.getLogger(AirQualityApi.class);
 
     private final RxClient<RxCompletionStageInvoker> client = RxCompletionStage.newClient();
-    private final LoadingCache<Long, Single<AirQualityResult>> aqResults = CacheBuilder.newBuilder()
+    private final LoadingCache<Long, AirQualityResult> aqResults = CacheBuilder.newBuilder()
             .expireAfterWrite(15, TimeUnit.MINUTES)
             .build(new AirQualityDataLoader());
-    private final LoadingCache<Class, Single<Set<Station>>> stations = CacheBuilder.newBuilder()
+    private final LoadingCache<Class, Set<Station>> stations = CacheBuilder.newBuilder()
             .expireAfterWrite(1, TimeUnit.DAYS)
             .build(new StationsDataLoader());
 
     public Single<AirQualityResult> getStats(long stationId) {
         return Single.defer(() -> {
             try {
-                return aqResults.get(stationId);
-            } catch (ExecutionException e) {
-                return Single.error(e);
+                return Single.just(aqResults.get(stationId));
+            } catch (ExecutionException ex) {
+                logger.warn("error while getting station values for stationId={}", stationId, ex);
+                return Single.error(ex);
             }
         });
     }
@@ -45,9 +51,10 @@ public class AirQualityApi {
     public Single<Set<Station>> getStations() {
         return Single.defer(() -> {
             try {
-                return stations.get(AirQualityApi.class);
-            } catch (ExecutionException e) {
-                return Single.error(e);
+                return Single.just(stations.get(AirQualityApi.class));
+            } catch (ExecutionException ex) {
+                logger.warn("error while getting list of stations", ex);
+                return Single.error(ex);
             }
         });
     }
@@ -66,10 +73,10 @@ public class AirQualityApi {
                         .orElseThrow(() -> new NoSuchElementException("No station with id: " + stationId)));
     }
 
-    private class AirQualityDataLoader extends CacheLoader<Long, Single<AirQualityResult>> {
+    private class AirQualityDataLoader extends CacheLoader<Long, AirQualityResult> {
 
         @Override
-        public Single<AirQualityResult> load(Long stationId) throws Exception {
+        public AirQualityResult load(Long stationId) throws Exception {
             CompletableFuture<Response> responseCompletionStage = client
                     .target("http://powietrze.gios.gov.pl/pjp/current/getAQIDetails")
                     .queryParam("id", stationId)
@@ -78,9 +85,10 @@ public class AirQualityApi {
                     .rx()
                     .get().toCompletableFuture();
             return Single.fromFuture(responseCompletionStage)
-                    .map((resp) -> resp.readEntity(JsonObject.class))
+                    .observeOn(Schedulers.io())
+                    .map(resp -> resp.readEntity(JsonObject.class))
                     .map(this::parseResult)
-                    .cache();
+                    .blockingGet();
         }
 
         private AirQualityResult parseResult(JsonObject jsonObject) {
@@ -97,9 +105,9 @@ public class AirQualityApi {
         }
     }
 
-    private class StationsDataLoader extends CacheLoader<Class, Single<Set<Station>>> {
+    private class StationsDataLoader extends CacheLoader<Class, Set<Station>> {
         @Override
-        public Single<Set<Station>> load(Class notUsed) throws Exception {
+        public Set<Station> load(Class notUsed) throws Exception {
             CompletableFuture<Response> responseCompletionStage = client
                     .target("http://powietrze.gios.gov.pl/pjp/current/getAQIDetailsList")
                     .queryParam("param", "AQI")
@@ -107,9 +115,10 @@ public class AirQualityApi {
                     .rx()
                     .get().toCompletableFuture();
             return Single.fromFuture(responseCompletionStage)
+                    .observeOn(Schedulers.io())
                     .map((resp) -> resp.readEntity(JsonArray.class))
                     .map(this::parseResult)
-                    .cache();
+                    .blockingGet();
         }
 
         private Set<Station> parseResult(JsonArray jsonArray) {
