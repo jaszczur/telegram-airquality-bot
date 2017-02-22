@@ -19,6 +19,7 @@ import pl.jaszczur.bots.aqi.state.ChatState;
 import pl.jaszczur.bots.aqi.state.ChatStates;
 
 import java.util.EnumSet;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import static pl.jaszczur.bots.aqi.BotUtils.textWithoutCommand;
@@ -60,7 +61,7 @@ public class SetLocationCommand implements Command<Message> {
         return Single.just(new SendMessage(chat.id(), "Podaj nazwę lub numer stacji"));
     }
 
-    private Flowable<? extends SendMessage> tryToSetStation(Chat chat, ChatState chatState, String text) {
+    private Flowable<SendMessage> tryToSetStation(Chat chat, ChatState chatState, String text) {
         try {
             return setStationById(chat, chatState, text);
         } catch (NumberFormatException ex) {
@@ -68,14 +69,19 @@ public class SetLocationCommand implements Command<Message> {
         }
     }
 
-    private Flowable<? extends SendMessage> setStationById(Chat chat, ChatState chatState, String text) {
+    private Flowable<SendMessage> setStationById(Chat chat, ChatState chatState, String text) {
         long stationId = Long.parseLong(text);
         return aqApi.getStation(stationId)
                 .toFlowable()
-                .flatMap(st -> setStationAndReply(chat, chatState, st));
+                .flatMap(st -> setStationAndReply(chat, chatState, st))
+                .onErrorReturn(err ->
+                        new SendMessage(chat.id(),
+                                err instanceof NoSuchElementException
+                                        ? "Nie znaleziono takiej stacji"
+                                        : TextCommands.getText(chatState.getLocale(), "msg.server_error")));
     }
 
-    private Flowable<? extends SendMessage> findStationByName(Chat chat, ChatState chatState, String text) {
+    private Flowable<SendMessage> findStationByName(Chat chat, ChatState chatState, String text) {
         if (text.length() < 3) {
             return Flowable.just(new SendMessage(chat.id(), "Podaj co najmniej 3 znaki nazwy stacji"));
         } else {
@@ -93,10 +99,10 @@ public class SetLocationCommand implements Command<Message> {
         }
     }
 
-    private Flowable<? extends SendMessage> setStationAndReply(Chat chat, ChatState chatState, Station station) {
+    private Flowable<SendMessage> setStationAndReply(Chat chat, ChatState chatState, Station station) {
         chatState.setStation(station);
         chatState.setUseCase(UseCase.GETTING_UPDATES);
-        SendMessage confirmation = new SendMessage(chat.id(), "Ustawiono stację " + station.getName());
+        SendMessage confirmation = new SendMessage(chat.id(), "Ustawiono stację *" + station.getName() + "*.").parseMode(ParseMode.Markdown);
 
         return Flowable.just(confirmation)
                 .mergeWith(aqMessageProvider.getMessage(chat, chatState));
