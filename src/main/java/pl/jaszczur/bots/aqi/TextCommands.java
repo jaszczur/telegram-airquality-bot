@@ -12,7 +12,7 @@ public class TextCommands {
             new Locale("pl"), ImmutableMap.<String, String>builder()
                     .put("cmd.refresh", "\uD83D\uDD01 Podaj aktualne wartości")
                     .put("cmd.set_station", "\uD83D\uDD00 Zmień stację")
-                    .put("msg.hello", "Siema. Najpierw proponuję ustawić stację pomiarowa. Wpisz nazwię miejscowości lub ulicę.")
+                    .put("msg.hello", "Najpierw proponuję ustawić stację pomiarową. Wpisz nazwę miejscowości lub ulicę.")
                     .put("msg.server_error", "Nie udało się pobrać danych z serwera GIOŚ  \uD83D\uDE14")
                     .put("enum.AirQualityIndex.VERY_GOOD", "\uD83C\uDF40 wyśmienity")
                     .put("enum.AirQualityIndex.GOOD", "✅ dobry")
