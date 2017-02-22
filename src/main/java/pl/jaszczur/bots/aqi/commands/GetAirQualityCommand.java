@@ -7,8 +7,6 @@ import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.BaseResponse;
 import io.reactivex.Flowable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import pl.jaszczur.bots.aqi.UseCase;
 import pl.jaszczur.bots.aqi.aqlogic.Station;
 import pl.jaszczur.bots.aqi.state.ChatState;

@@ -1,7 +1,6 @@
 package pl.jaszczur.bots.aqi.aqlogic;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 public class AirQualityResult {
