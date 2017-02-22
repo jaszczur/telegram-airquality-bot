@@ -1,5 +1,6 @@
 package pl.jaszczur.bots.aqi.commands;
 
+import com.google.common.collect.Iterables;
 import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.request.ParseMode;
@@ -10,6 +11,7 @@ import io.reactivex.Flowable;
 import io.reactivex.Single;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.jaszczur.bots.aqi.TextCommands;
 import pl.jaszczur.bots.aqi.UseCase;
 import pl.jaszczur.bots.aqi.aqlogic.AirQualityApi;
 import pl.jaszczur.bots.aqi.aqlogic.Station;
@@ -62,7 +64,7 @@ public class SetLocationCommand implements Command<Message> {
         try {
             return setStationById(chat, chatState, text);
         } catch (NumberFormatException ex) {
-            return findStationByName(chat, text);
+            return findStationByName(chat, chatState, text);
         }
     }
 
@@ -70,25 +72,37 @@ public class SetLocationCommand implements Command<Message> {
         long stationId = Long.parseLong(text);
         return aqApi.getStation(stationId)
                 .toFlowable()
-                .flatMap(station -> {
-                    chatState.setStation(station);
-                    chatState.setUseCase(UseCase.GETTING_UPDATES);
-                    SendMessage confirmation = new SendMessage(chat.id(), "Ustawiono stację " + station.getName());
-
-                    return Flowable.just(confirmation)
-                            .mergeWith(aqMessageProvider.getMessage(chat, chatState));
-                });
+                .flatMap(st -> setStationAndReply(chat, chatState, st));
     }
 
-    private Flowable<? extends SendMessage> findStationByName(Chat chat, String text) {
+    private Flowable<? extends SendMessage> findStationByName(Chat chat, ChatState chatState, String text) {
         if (text.length() < 3) {
             return Flowable.just(new SendMessage(chat.id(), "Podaj co najmniej 3 znaki nazwy stacji"));
         } else {
             return aqApi.getStations(text)
                     .toFlowable()
-                    .map(stations -> new SendMessage(chat.id(), listStations(stations)).parseMode(ParseMode.Markdown))
-                    .onErrorReturn(err -> new SendMessage(chat.id(), "Nie znaleziono takiej stacji"));
+                    .flatMap(stations -> {
+                        if (stations.isEmpty())
+                            return Flowable.just(new SendMessage(chat.id(), "Nie znaleziono takiej stacji"));
+                        else if (stations.size() == 1) {
+                            return setStationAndReply(chat, chatState, Iterables.getOnlyElement(stations));
+                        } else
+                            return Flowable.just(new SendMessage(chat.id(), listStations(stations)).parseMode(ParseMode.Markdown));
+                    })
+                    .onErrorReturn(err -> {
+                        logger.warn("error while getting list of stations", err);
+                        return new SendMessage(chat.id(), TextCommands.getText(chatState.getLocale(), "msg.server_error"));
+                    });
         }
+    }
+
+    private Flowable<? extends SendMessage> setStationAndReply(Chat chat, ChatState chatState, Station station) {
+        chatState.setStation(station);
+        chatState.setUseCase(UseCase.GETTING_UPDATES);
+        SendMessage confirmation = new SendMessage(chat.id(), "Ustawiono stację " + station.getName());
+
+        return Flowable.just(confirmation)
+                .mergeWith(aqMessageProvider.getMessage(chat, chatState));
     }
 
     private String listStations(Set<Station> stations) {
