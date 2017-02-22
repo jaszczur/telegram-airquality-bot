@@ -10,6 +10,8 @@ import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.BaseResponse;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.jaszczur.bots.aqi.TextCommands;
 import pl.jaszczur.bots.aqi.aqlogic.AirQualityApi;
 import pl.jaszczur.bots.aqi.aqlogic.AirQualityIndexProvider;
@@ -21,6 +23,7 @@ import java.util.List;
 import java.util.Locale;
 
 public class AirQualityMessageProvider {
+    private static final Logger logger = LoggerFactory.getLogger(AirQualityMessageProvider.class);
     private final AirQualityApi airQualityApi;
     private final AirQualityIndexProvider airQualityIndexProvider;
 
@@ -36,6 +39,10 @@ public class AirQualityMessageProvider {
     public Flowable<SendMessage> getMessage(Chat chat, ChatState chatState) {
         return getMessage(chatState.getLocale(), chatState.getStation().getId())
                 .map(msg -> createSuccessMessage(chat, chatState, msg))
+                .onErrorReturn(err -> {
+                    logger.warn("error", err);
+                    return createSuccessMessage(chat, chatState, TextCommands.getText(chatState.getLocale(), "msg.server_error"));
+                })
                 .toFlowable();
 
     }

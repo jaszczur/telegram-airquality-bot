@@ -77,10 +77,6 @@ public class SetLocationCommand implements Command<Message> {
 
                     return Flowable.just(confirmation)
                             .mergeWith(aqMessageProvider.getMessage(chat, chatState));
-                })
-                .onErrorReturn(err -> {
-                    logger.warn("Lipa", err);
-                    return new SendMessage(chat.id(), "Nie znaleziono takiej stacji");
                 });
     }
 

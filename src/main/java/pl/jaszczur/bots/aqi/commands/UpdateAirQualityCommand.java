@@ -10,9 +10,14 @@ import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.request.EditMessageText;
 import com.pengrad.telegrambot.response.BaseResponse;
 import io.reactivex.Flowable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import pl.jaszczur.bots.aqi.TextCommands;
+import pl.jaszczur.bots.aqi.state.ChatState;
 import pl.jaszczur.bots.aqi.state.ChatStates;
 
 public class UpdateAirQualityCommand implements Command<CallbackQuery> {
+    private static final Logger logger = LoggerFactory.getLogger(UpdateAirQualityCommand.class);
     private final AirQualityMessageProvider airQualityMessageProvider;
     private final ChatStates chatStates;
 
@@ -26,10 +31,10 @@ public class UpdateAirQualityCommand implements Command<CallbackQuery> {
         return Flowable.defer(() -> {
             long stationId = Long.parseLong(cq.data());
             Message attachedMessage = cq.message();
-            return airQualityMessageProvider.getMessage(chatStates.getState(attachedMessage.chat()).getLocale(), stationId)
+            ChatState chatState = chatStates.getState(attachedMessage.chat());
+            return airQualityMessageProvider.getMessage(chatState.getLocale(), stationId)
                     .toFlowable()
                     .flatMap(text -> {
-
                         EditMessageText editMessage = new EditMessageText(attachedMessage.chat().id(), attachedMessage.messageId(), text)
                                 .parseMode(ParseMode.Markdown)
                                 .replyMarkup(new InlineKeyboardMarkup(new InlineKeyboardButton[]{
@@ -37,6 +42,10 @@ public class UpdateAirQualityCommand implements Command<CallbackQuery> {
                                 }));
                         AnswerCallbackQuery answerCallbackQuery = new AnswerCallbackQuery(cq.id()).text("Pobrano aktualne dane");
                         return Flowable.just(editMessage, answerCallbackQuery);
+                    })
+                    .onErrorReturn((err) -> {
+                        logger.warn("error", err);
+                        return new AnswerCallbackQuery(cq.id()).text(TextCommands.getText(chatState.getLocale(), "msg.server_error"));
                     });
         });
     }
